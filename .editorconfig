@@ -11,7 +11,7 @@ trim_trailing_whitespace = true
 indent_size = 4
 csharp_style_namespace_declarations = file_scoped:warning
 csharp_style_var_for_built_in_types = false:suggestion
-dotnet_style_require_accessibility_modifiers = always:warning
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
 
 [*.{ts,html,scss,json,yml,yaml}]
 indent_size = 2
