@@ -1,0 +1,78 @@
+<div class="page">
+  <header class="page__header">
+    <h1>Reviews</h1>
+    <p class="page__lead">
+      Everything people have said, newest first. Use the search box above to narrow it down.
+    </p>
+  </header>
+
+  <!-- Status region: loading, errors and the result count are announced here rather than
+       being visible only. -->
+  <div class="page__status" role="status" aria-live="polite">
+    @if (reviews.isLoading()) {
+      <mat-progress-bar mode="indeterminate" aria-label="Loading reviews" />
+      <p>Loading reviews…</p>
+    } @else if (reviews.error()) {
+      <p class="page__error">
+        <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">error</mat-icon>
+        Couldn't load reviews. Check the API is running and try again.
+      </p>
+    } @else {
+      <p>{{ total() }} {{ total() === 1 ? 'review' : 'reviews' }}</p>
+    }
+  </div>
+
+  @if (!reviews.isLoading() && !reviews.error()) {
+    @if (total() === 0) {
+      <p class="page__empty">No reviews match that search yet.</p>
+    } @else {
+      <ul class="reviews" role="list">
+        @for (review of reviews.value()?.items ?? []; track review.id) {
+          <li>
+            <mat-card appearance="outlined" class="review">
+              <mat-card-header>
+                <mat-card-title>
+                  <a [routerLink]="['/map', review.bathroomSlug]">{{ review.bathroomName }}</a>
+                </mat-card-title>
+                <mat-card-subtitle>
+                  {{ review.authorName }} ·
+                  <time [attr.datetime]="review.createdAt.toISOString()">
+                    {{ review.createdAt.toLocaleDateString() }}
+                  </time>
+                </mat-card-subtitle>
+              </mat-card-header>
+
+              <mat-card-content>
+                @if (review.headline) {
+                  <p class="review__headline">{{ review.headline }}</p>
+                }
+                <p class="review__body">{{ review.body }}</p>
+
+                <gg-star-rating-display
+                  [value]="review.overall"
+                  label="Overall"
+                  class="review__overall"
+                />
+
+                <dl class="review__scores">
+                  @for (dimension of dimensions; track dimension) {
+                    <div class="review__score">
+                      <dt>{{ labels[dimension] }}</dt>
+                      <dd>{{ review.scores[dimension] }} out of 5</dd>
+                    </div>
+                  }
+                </dl>
+
+                @if (review.isDemoData) {
+                  <mat-chip-set>
+                    <mat-chip highlighted>Demo data</mat-chip>
+                  </mat-chip-set>
+                }
+              </mat-card-content>
+            </mat-card>
+          </li>
+        }
+      </ul>
+    }
+  }
+</div>

@@ -1,0 +1,36 @@
+:host {
+  display: inline-block;
+}
+
+.rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.stars {
+  display: inline-flex;
+  letter-spacing: 0.05em;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.star {
+  color: var(--mat-sys-outline-variant);
+
+  &--filled {
+    color: var(--gg-ink);
+  }
+
+  /* Half marks are shown as a distinct tone rather than a partial glyph: the numeral
+     next to it carries the precise value anyway. */
+  &--half {
+    color: var(--mat-sys-primary);
+  }
+}
+
+.value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--mat-sys-on-surface);
+}

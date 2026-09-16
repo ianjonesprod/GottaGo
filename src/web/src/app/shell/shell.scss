@@ -1,0 +1,91 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  gap: 0.5rem;
+  background: var(--gg-ink);
+  color: #fff;
+
+  &__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: inherit;
+    font-weight: 800;
+  }
+
+  &__logo {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: #fff;
+    color: var(--gg-ink);
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+
+  &__search {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1 1 22rem;
+    max-width: 34rem;
+  }
+
+  &__field {
+    flex: 1;
+  }
+
+  &__spacer {
+    flex: 1 1 auto;
+  }
+}
+
+/* On a phone the toolbar cannot hold a logo, a search field and three buttons.
+   The name and the submit button go first; search itself stays. */
+@media (max-width: 720px) {
+  .topbar {
+    &__name,
+    &__submit {
+      display: none;
+    }
+
+    &__search {
+      flex-basis: auto;
+    }
+  }
+}
+
+.layout {
+  flex: 1;
+  min-height: 0;
+
+  &__nav {
+    width: 16rem;
+    border-right: 1px solid var(--mat-sys-outline-variant);
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+main {
+  flex: 1;
+  min-height: 0;
+
+  /* Focus lands here on navigation, but the outline would frame the whole page.
+     The heading inside gets the visible ring instead. */
+  &:focus {
+    outline: none;
+  }
+}

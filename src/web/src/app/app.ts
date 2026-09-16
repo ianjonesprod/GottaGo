@@ -1,12 +1,12 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+
+import { Shell } from './shell/shell';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.scss'
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [Shell],
+  template: '<gg-shell />',
+  styles: ':host { display: block; height: 100%; }',
 })
-export class App {
-  protected readonly title = signal('web');
-}
+export class App {}

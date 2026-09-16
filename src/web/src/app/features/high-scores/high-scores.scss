@@ -1,0 +1,53 @@
+.page {
+  padding: 1.5rem 1rem 3rem;
+  max-width: var(--gg-max-content);
+  margin: 0 auto;
+
+  &__header h1 {
+    margin: 0 0 0.25rem;
+    font: var(--mat-sys-headline-medium);
+  }
+
+  &__lead {
+    margin: 0 0 1rem;
+    max-width: 55ch;
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  &__filter {
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  &__status {
+    margin-bottom: 1rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  &__error {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--mat-sys-error);
+  }
+}
+
+.scores {
+  width: 100%;
+  background: var(--mat-sys-surface);
+
+  &__city {
+    display: block;
+    font-size: 0.8125rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+/* A four-column table does not fit a phone. Let it scroll sideways rather than
+   squashing the names into unreadable columns. */
+@media (max-width: 600px) {
+  .scores {
+    display: block;
+    overflow-x: auto;
+  }
+}

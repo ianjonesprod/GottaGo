@@ -1,0 +1,89 @@
+<div class="map-page">
+  <header class="map-page__header">
+    <h1>Bathrooms near you</h1>
+    <p class="map-page__lead">
+      @switch (locationState()) {
+        @case ('located') { Showing bathrooms within {{ radiusMiles() }} miles of you. }
+        @case ('locating') { Finding your location… }
+        @case ('unavailable') {
+          Couldn't get your location, so this is centred on Cleveland, Ohio.
+        }
+        @default { Centred on Cleveland, Ohio. }
+      }
+    </p>
+    @if (locationState() !== 'located') {
+      <button mat-stroked-button type="button" (click)="useMyLocation()">
+        <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">my_location</mat-icon>
+        Use my location
+      </button>
+    }
+  </header>
+
+  <div class="map-page__body">
+    <!--
+      The map itself arrives with the Google Maps integration. Until an API key is
+      configured this panel explains why it is blank, and the rail beside it still carries
+      the entire feature.
+    -->
+    <section class="map-page__canvas" aria-labelledby="map-heading">
+      <h2 id="map-heading" class="gg-visually-hidden">Map</h2>
+      <div class="map-placeholder">
+        <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">map</mat-icon>
+        <p>The map needs a Google Maps API key before it can draw.</p>
+        <p class="map-placeholder__hint">
+          Everything works without it — the list beside this panel has the same bathrooms.
+        </p>
+      </div>
+    </section>
+
+    <section class="map-page__rail" aria-labelledby="results-heading">
+      <h2 id="results-heading" class="map-page__rail-heading">
+        Results
+        <span class="map-page__count" role="status" aria-live="polite">
+          @if (bathrooms.isLoading()) {
+            Loading…
+          } @else if (bathrooms.error()) {
+            Couldn't load
+          } @else {
+            {{ total() }} {{ total() === 1 ? 'bathroom' : 'bathrooms' }}
+          }
+        </span>
+      </h2>
+
+      @if (bathrooms.isLoading()) {
+        <mat-progress-bar mode="indeterminate" aria-label="Loading bathrooms" />
+      } @else if (bathrooms.error()) {
+        <p class="map-page__error">
+          <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">error</mat-icon>
+          Couldn't load bathrooms. Check the API is running.
+        </p>
+      } @else if (total() === 0) {
+        <p class="map-page__empty">
+          No bathrooms here. Try widening the search or clearing the keyword.
+        </p>
+      } @else {
+        <mat-nav-list class="map-page__list">
+          @for (bathroom of results(); track bathroom.id) {
+            <a mat-list-item [routerLink]="['/map', bathroom.slug]">
+              <span matListItemTitle>{{ bathroom.name }}</span>
+              <span matListItemLine>{{ bathroom.address }}</span>
+              <span matListItemLine>
+                <gg-star-rating-display
+                  [value]="bathroom.rating.overall"
+                  [reviewCount]="bathroom.rating.reviewCount"
+                  [label]="bathroom.name"
+                />
+              </span>
+              @if (bathroom.accessNote) {
+                <span matListItemLine class="map-page__access">
+                  <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">info</mat-icon>
+                  {{ bathroom.accessNote }}
+                </span>
+              }
+            </a>
+          }
+        </mat-nav-list>
+      }
+    </section>
+  </div>
+</div>

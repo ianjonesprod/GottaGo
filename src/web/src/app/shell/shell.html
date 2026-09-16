@@ -1,0 +1,119 @@
+<!--
+  The skip link is the first focusable thing on the page. A keyboard user landing here
+  should not have to tab through the whole nav to reach the content, and on the map page
+  it is the fastest route to the results list.
+-->
+<a class="gg-skip-link" href="#main-content">Skip to main content</a>
+
+<mat-toolbar class="topbar" color="primary">
+  <button
+    mat-icon-button
+    class="topbar__menu"
+    type="button"
+    [attr.aria-label]="drawer.opened ? 'Close navigation menu' : 'Open navigation menu'"
+    [attr.aria-expanded]="drawer.opened"
+    aria-controls="main-navigation"
+    (click)="drawer.toggle()"
+  >
+    <mat-icon fontSet="material-symbols-rounded">menu</mat-icon>
+  </button>
+
+  <button mat-button class="topbar__brand" type="button" (click)="goHome()">
+    <span class="topbar__logo" aria-hidden="true">GG</span>
+    <span class="topbar__name">GottaGo</span>
+  </button>
+
+  <form class="topbar__search" role="search" (submit)="submitSearch($event)">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="topbar__field">
+      <mat-label>Search bathrooms</mat-label>
+      <input
+        matInput
+        type="search"
+        name="q"
+        autocomplete="off"
+        [ngModel]="draftQuery()"
+        (ngModelChange)="draftQuery.set($event)"
+      />
+      <mat-icon matPrefix fontSet="material-symbols-rounded" aria-hidden="true">search</mat-icon>
+      @if (draftQuery()) {
+        <button
+          matSuffix
+          mat-icon-button
+          type="button"
+          aria-label="Clear search"
+          (click)="clearSearch()"
+        >
+          <mat-icon fontSet="material-symbols-rounded">close</mat-icon>
+        </button>
+      }
+    </mat-form-field>
+    <button mat-flat-button type="submit" class="topbar__submit">Search</button>
+  </form>
+
+  <span class="topbar__spacer"></span>
+
+  <button mat-icon-button type="button" aria-label="Your account" [matMenuTriggerFor]="accountMenu">
+    <mat-icon fontSet="material-symbols-rounded">account_circle</mat-icon>
+  </button>
+
+  <button mat-icon-button type="button" aria-label="More options" [matMenuTriggerFor]="overflowMenu">
+    <mat-icon fontSet="material-symbols-rounded">more_vert</mat-icon>
+  </button>
+
+  <mat-menu #accountMenu="matMenu">
+    <button mat-menu-item type="button" routerLink="/sign-in">
+      <mat-icon fontSet="material-symbols-rounded">login</mat-icon>
+      <span>Sign in</span>
+    </button>
+    <button mat-menu-item type="button" routerLink="/sign-up">
+      <mat-icon fontSet="material-symbols-rounded">person_add</mat-icon>
+      <span>Create an account</span>
+    </button>
+  </mat-menu>
+
+  <mat-menu #overflowMenu="matMenu">
+    <button mat-menu-item type="button" (click)="theme.toggle()">
+      <mat-icon fontSet="material-symbols-rounded">contrast</mat-icon>
+      <span>{{ theme.isDark() ? 'Switch to light theme' : 'Switch to dark theme' }}</span>
+    </button>
+  </mat-menu>
+</mat-toolbar>
+
+<mat-sidenav-container class="layout">
+  <mat-sidenav
+    #drawer
+    id="main-navigation"
+    class="layout__nav"
+    [mode]="isHandset() ? 'over' : 'side'"
+    [opened]="!isHandset()"
+  >
+    <!-- Named so a screen reader announces what this landmark is for. -->
+    <nav aria-labelledby="nav-heading">
+      <h2 id="nav-heading" class="gg-visually-hidden">Main navigation</h2>
+      <mat-nav-list>
+        @for (destination of destinations; track destination.path) {
+          <a
+            mat-list-item
+            [routerLink]="destination.path"
+            routerLinkActive
+            #active="routerLinkActive"
+            [attr.aria-current]="active.isActive ? 'page' : null"
+            (click)="closeIfHandset(drawer)"
+          >
+            <mat-icon matListItemIcon fontSet="material-symbols-rounded" aria-hidden="true">
+              {{ destination.icon }}
+            </mat-icon>
+            <span matListItemTitle>{{ destination.label }}</span>
+            <span matListItemLine>{{ destination.hint }}</span>
+          </a>
+        }
+      </mat-nav-list>
+    </nav>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="layout__content">
+    <main id="main-content" tabindex="-1">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

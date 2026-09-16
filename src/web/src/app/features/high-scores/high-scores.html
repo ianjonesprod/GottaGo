@@ -1,0 +1,81 @@
+<div class="page">
+  <header class="page__header">
+    <h1>High scores</h1>
+    <p class="page__lead">
+      Ranked by a confidence-weighted average, so a bathroom with one glowing review doesn't
+      outrank one that dozens of people liked. The raw average and review count are both shown
+      so you can see why something sits where it does.
+    </p>
+  </header>
+
+  <mat-button-toggle-group
+    class="page__filter"
+    aria-label="Rank by"
+    [value]="selectedDimension()"
+    (change)="selectedDimension.set($event.value)"
+  >
+    <mat-button-toggle value="overall">Overall</mat-button-toggle>
+    @for (dimension of dimensions; track dimension) {
+      <mat-button-toggle [value]="dimension">{{ labels[dimension] }}</mat-button-toggle>
+    }
+  </mat-button-toggle-group>
+
+  <div class="page__status" role="status" aria-live="polite">
+    @if (scores.isLoading()) {
+      <mat-progress-bar mode="indeterminate" aria-label="Loading leaderboard" />
+      <p>Loading leaderboard…</p>
+    } @else if (scores.error()) {
+      <p class="page__error">
+        <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">error</mat-icon>
+        Couldn't load the leaderboard. Check the API is running and try again.
+      </p>
+    } @else {
+      <p>{{ rows().length }} bathrooms ranked</p>
+    }
+  </div>
+
+  @if (!scores.isLoading() && !scores.error() && rows().length > 0) {
+    <table mat-table [dataSource]="rows()" class="scores">
+      <caption class="gg-visually-hidden">
+        Bathrooms ranked by rating, best first.
+      </caption>
+
+      <ng-container matColumnDef="rank">
+        <th mat-header-cell *matHeaderCellDef scope="col">Rank</th>
+        <td mat-cell *matCellDef="let row">{{ row.rank }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef scope="col">Bathroom</th>
+        <td mat-cell *matCellDef="let row">
+          <a [routerLink]="['/map', row.slug]">{{ row.name }}</a>
+          <span class="scores__city">{{ row.city }}</span>
+          @if (row.isDemoData) {
+            <mat-chip-set>
+              <mat-chip highlighted>Demo data</mat-chip>
+            </mat-chip-set>
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="rating">
+        <th mat-header-cell *matHeaderCellDef scope="col">Average</th>
+        <td mat-cell *matCellDef="let row">
+          <gg-star-rating-display
+            [value]="row.rating.overall"
+            [reviewCount]="row.rating.reviewCount"
+            [label]="row.name"
+          />
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="reviews">
+        <th mat-header-cell *matHeaderCellDef scope="col">Reviews</th>
+        <td mat-cell *matCellDef="let row">{{ row.rating.reviewCount }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="columns"></tr>
+      <tr mat-row *matRowDef="let row; columns: columns"></tr>
+    </table>
+  }
+</div>

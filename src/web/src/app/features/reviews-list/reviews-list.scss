@@ -1,0 +1,86 @@
+.page {
+  padding: 1.5rem 1rem 3rem;
+  max-width: var(--gg-max-content);
+  margin: 0 auto;
+
+  &__header h1 {
+    margin: 0 0 0.25rem;
+    font: var(--mat-sys-headline-medium);
+  }
+
+  &__lead {
+    margin: 0 0 1rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  &__status {
+    margin-bottom: 1rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  &__error {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--mat-sys-error);
+  }
+
+  &__empty {
+    padding: 2rem;
+    text-align: center;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.reviews {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+}
+
+.review {
+  height: 100%;
+
+  &__headline {
+    font-weight: 700;
+    margin: 0 0 0.25rem;
+  }
+
+  &__body {
+    margin: 0 0 0.75rem;
+  }
+
+  &__overall {
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+
+  &__scores {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: 0.25rem 1rem;
+    margin: 0 0 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  &__score {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+    padding-bottom: 0.15rem;
+
+    dt {
+      color: var(--mat-sys-on-surface-variant);
+    }
+
+    dd {
+      margin: 0;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+}
