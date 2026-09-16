@@ -89,6 +89,21 @@
     flex: 1;
   }
 
+  &__distance {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-weight: 600;
+    color: var(--gg-ink);
+
+    mat-icon {
+      font-size: 1rem;
+      width: 1rem;
+      height: 1rem;
+      flex-shrink: 0;
+    }
+  }
+
   &__access {
     display: flex;
     align-items: flex-start;

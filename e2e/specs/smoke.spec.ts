@@ -117,3 +117,29 @@ test.describe('keyboard access', () => {
     await expect(page.locator('#main-content')).toBeFocused();
   });
 });
+
+test.describe('distance to results', () => {
+  test('every result says how far away it is', async ({ page }) => {
+    await page.goto('/map');
+
+    const rail = page.getByRole('region', { name: 'Results' });
+    await expect(rail.getByRole('link').first()).toBeVisible({ timeout: 15_000 });
+
+    // Distance is in the list as words, not only implied by the map, so it is available
+    // to anyone who cannot see the map at all.
+    await expect(rail.getByText(/miles away|a few minutes away/).first()).toBeVisible();
+  });
+
+  test('filtering keeps the distance readable for the match', async ({ page }) => {
+    await page.goto('/map');
+    await expect(page.getByRole('region', { name: 'Results' }).getByRole('link').first()).toBeVisible({
+      timeout: 15_000,
+    });
+
+    await page.getByLabel('Search bathrooms').fill('Rocky');
+
+    const rail = page.getByRole('region', { name: 'Results' });
+    await expect(rail.getByRole('link')).toHaveCount(1, { timeout: 15_000 });
+    await expect(rail.getByText(/miles away/)).toBeVisible();
+  });
+});

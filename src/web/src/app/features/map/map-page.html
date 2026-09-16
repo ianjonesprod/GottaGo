@@ -105,7 +105,10 @@
               @for (bathroom of results(); track bathroom.id) {
                 <a mat-list-item [routerLink]="['/map', bathroom.slug]">
                   <span matListItemTitle>{{ bathroom.name }}</span>
-                  <span matListItemLine>{{ bathroom.address }}</span>
+                  <span matListItemLine class="map-page__distance">
+                    <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">near_me</mat-icon>
+                    {{ bathroom.distanceLabel }} · {{ bathroom.address }}
+                  </span>
                   <span matListItemLine>
                     <gg-star-rating-display
                       [value]="bathroom.rating.overall"

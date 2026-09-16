@@ -15,6 +15,7 @@ import { BathroomChanges } from '../../core/api/bathroom-changes';
 import { GottaGoApi } from '../../core/api/gotta-go-api';
 import type { Bathroom } from '../../core/api/models/bathroom.model';
 import { GeolocationService } from '../../core/geolocation/geolocation.service';
+import { describeDistance, milesBetween } from '../../core/geolocation/distance';
 import { boundsAround } from '../../core/geolocation/map-bounds';
 import { MapsLoaderService } from '../../core/maps/maps-loader.service';
 import { SearchStore } from '../../core/search/search-store';
@@ -86,7 +87,21 @@ export class MapPage {
       }),
   });
 
-  protected readonly results = computed(() => this.bathrooms.value()?.items ?? []);
+  /**
+   * Results with how far away each one is.
+   *
+   * The distance is shown in the list, not only implied by the map, so the answer to "how
+   * far is that?" does not depend on being able to read a map at all.
+   */
+  protected readonly results = computed(() => {
+    const here = this.centre();
+
+    return (this.bathrooms.value()?.items ?? []).map((bathroom) => {
+      const miles = milesBetween(here, { latitude: bathroom.latitude, longitude: bathroom.longitude });
+
+      return { ...bathroom, miles, distanceLabel: describeDistance(miles) };
+    });
+  });
   protected readonly total = computed(() => this.results().length);
 
   protected readonly mapCentre = computed<google.maps.LatLngLiteral>(() => ({
@@ -192,11 +207,16 @@ export class MapPage {
   }
 
   /**
-   * Reframes the map around whatever a search left behind.
+   * Reframes the map around your location and whatever a search left behind.
    *
-   * Filtering to one bathroom on the far side of the county is useless if the map stays
-   * pointed where it was. Only fires when the search text actually changes - refitting on
-   * every result update would fight with anyone panning or zooming by hand.
+   * The frame deliberately includes where you are, not just the matches. Zooming straight
+   * to a single result answers "which one is it?" but throws away the more useful question,
+   * "how far is that from me?" - searching "Rocky" and landing on Rocky River tells you
+   * nothing about whether it is a ten minute walk or halfway across the county. Keeping
+   * both in view answers both at once.
+   *
+   * Only fires when the search text actually changes; refitting on every result update
+   * would fight with anyone panning or zooming by hand.
    */
   private fitToResultsWhenSearchChanges(): void {
     const keyword = this.search.keyword();
@@ -224,15 +244,20 @@ export class MapPage {
     }
 
     const bounds = new google.maps.LatLngBounds();
+    const here = this.centre();
+
+    // Anchor the frame on you, so the result is always shown relative to where you are.
+    bounds.extend({ lat: here.latitude, lng: here.longitude });
 
     for (const bathroom of results) {
       bounds.extend({ lat: bathroom.latitude, lng: bathroom.longitude });
     }
 
-    map.fitBounds(bounds, 48);
+    map.fitBounds(bounds, 64);
 
-    // fitBounds on a single point zooms as far in as it will go, which is disorienting.
-    if (results.length === 1 && (map.getZoom() ?? 0) > MapPage.SelectedZoom) {
+    // Somewhere essentially on top of you leaves a box with no size, and fitBounds responds
+    // by zooming as far in as it will go. Pull back to something legible.
+    if ((map.getZoom() ?? 0) > MapPage.SelectedZoom) {
       map.setZoom(MapPage.SelectedZoom);
     }
   }
