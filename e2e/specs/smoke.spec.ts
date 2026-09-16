@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../support/fixtures';
 
 import { expectNoA11yViolations } from '../support/a11y';
 
@@ -99,9 +99,17 @@ test.describe('keyboard access', () => {
   test('skip link is the first thing you reach and jumps to the content', async ({ page }) => {
     await page.goto('/map');
 
+    // Wait for the app to finish starting. It fetches its config before the first render,
+    // and tabbing mid-bootstrap races that.
+    await expect(page.getByRole('heading', { name: 'Bathrooms near you', level: 1 })).toBeVisible();
+
     await page.keyboard.press('Tab');
 
     const skipLink = page.getByRole('link', { name: 'Skip to main content' });
     await expect(skipLink).toBeFocused();
+
+    // And it actually goes somewhere: activating it moves focus to the main region.
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#main-content')).toBeFocused();
   });
 });

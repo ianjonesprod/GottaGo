@@ -21,19 +21,40 @@
 
   <div class="map-page__body">
     <!--
-      The map itself arrives with the Google Maps integration. Until an API key is
-      configured this panel explains why it is blank, and the rail beside it still carries
-      the entire feature.
+      The map is an enhancement. If the key is missing or Google fails to load, the rail
+      beside it still carries the whole feature.
     -->
     <section class="map-page__canvas" aria-labelledby="map-heading">
-      <h2 id="map-heading" class="gg-visually-hidden">Map</h2>
-      <div class="map-placeholder">
-        <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">map</mat-icon>
-        <p>The map needs a Google Maps API key before it can draw.</p>
-        <p class="map-placeholder__hint">
-          Everything works without it — the list beside this panel has the same bathrooms.
-        </p>
-      </div>
+      <h2 id="map-heading" class="gg-visually-hidden">Map of bathrooms</h2>
+
+      @if (mapsStatus() === 'ready') {
+        <google-map
+          height="100%"
+          width="100%"
+          [center]="mapCentre()"
+          [options]="mapOptions"
+          (mapInitialized)="$event.fitBounds(mapBounds())"
+        >
+          @for (bathroom of results(); track bathroom.id) {
+            <map-marker
+              [options]="markerOptions(bathroom)"
+              (mapClick)="openBathroom(bathroom)"
+            />
+          }
+        </google-map>
+      } @else {
+        <div class="map-placeholder">
+          <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">map</mat-icon>
+          @if (mapsStatus() === 'loading') {
+            <p>Loading the map…</p>
+          } @else {
+            <p>The map isn't available right now.</p>
+          }
+          <p class="map-placeholder__hint">
+            Everything still works — the list beside this panel has the same bathrooms.
+          </p>
+        </div>
+      }
     </section>
 
     <div class="map-page__side">
