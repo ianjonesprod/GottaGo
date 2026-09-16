@@ -17,6 +17,12 @@
         Use my location
       </button>
     }
+    <!-- The same action as clicking the map, as a real button. Clicking empty map space is
+         not something a keyboard or screen reader user can do. -->
+    <a mat-stroked-button [routerLink]="['/map', 'new']" [queryParams]="{ lat: centre().latitude, lng: centre().longitude }">
+      <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">add_location_alt</mat-icon>
+      Add a bathroom
+    </a>
   </header>
 
   <div class="map-page__body">
@@ -34,6 +40,7 @@
           [center]="mapCentre()"
           [options]="mapOptions"
           (mapInitialized)="$event.fitBounds(mapBounds())"
+          (mapClick)="addHere($event)"
         >
           @for (bathroom of results(); track bathroom.id) {
             <map-marker

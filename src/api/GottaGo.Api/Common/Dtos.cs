@@ -175,3 +175,18 @@ public sealed record SubmitReviewRequest(
     [Required, MaxLength(2000)] string Body,
     [Required] ScoresDto Scores,
     DateOnly? VisitedOn);
+
+/// <summary>What a client sends to add a bathroom they dropped a pin on.</summary>
+public sealed record CreateBathroomRequest(
+    [Required, MaxLength(200)] string Name,
+    [MaxLength(1000)] string? Description,
+    [MaxLength(200)] string? Street,
+    [Required, MaxLength(100)] string City,
+    [Required, MaxLength(50)] string State,
+    [MaxLength(20)] string? PostalCode,
+    [Range(-90, 90)] double Latitude,
+    [Range(-180, 180)] double Longitude,
+    string? Venue,
+    [MaxLength(300)] string? AccessNote,
+    ScoresDto? FirstReviewScores,
+    [MaxLength(2000)] string? FirstReviewBody);

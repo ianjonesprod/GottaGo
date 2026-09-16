@@ -6,7 +6,7 @@ using GottaGo.Domain.Reviews;
 
 namespace GottaGo.Application.Bathrooms;
 
-public sealed record CreateBathroomRequest(
+public sealed record CreateBathroomRequestModel(
     string Name,
     string? Description,
     Address Address,
@@ -34,7 +34,7 @@ public sealed class BathroomService(
         return bathroom ?? throw new NotFoundException($"Bathroom '{idOrSlug}'");
     }
 
-    public async Task<Bathroom> CreateAsync(CreateBathroomRequest request, Guid authorId, CancellationToken cancellationToken)
+    public async Task<Bathroom> CreateAsync(CreateBathroomRequestModel request, Guid authorId, CancellationToken cancellationToken)
     {
         var now = clock.UtcNow;
         var slug = await UniqueSlugAsync(request.Name, cancellationToken);

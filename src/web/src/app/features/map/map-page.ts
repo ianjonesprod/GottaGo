@@ -127,6 +127,23 @@ export class MapPage {
     };
   }
 
+  /**
+   * Clicking empty map space starts adding a bathroom there. The coordinates travel in the
+   * URL so the form works without the map too - somebody who cannot use a map can still
+   * reach it and type an address.
+   */
+  protected addHere(event: google.maps.MapMouseEvent): void {
+    const position = event.latLng;
+
+    if (!position) {
+      return;
+    }
+
+    void this.router.navigate(['/map', 'new'], {
+      queryParams: { lat: position.lat(), lng: position.lng() },
+    });
+  }
+
   protected openBathroom(bathroom: Bathroom): void {
     void this.router.navigate(['/map', bathroom.slug]);
   }

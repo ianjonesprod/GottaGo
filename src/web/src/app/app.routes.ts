@@ -15,6 +15,13 @@ export const routes: Routes = [
     loadComponent: () => import('./features/map/map-page').then((m) => m.MapPage),
     children: [
       {
+        path: 'new',
+        data: { title: 'Add a bathroom' },
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/add-bathroom/add-bathroom').then((m) => m.AddBathroom),
+      },
+      {
         path: ':slug/review',
         data: { title: 'Write a review' },
         canActivate: [authGuard],

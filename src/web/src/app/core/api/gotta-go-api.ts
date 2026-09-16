@@ -18,6 +18,21 @@ export interface SubmitReview {
   scores: Record<RatingDimension, number>;
 }
 
+export interface CreateBathroom {
+  name: string;
+  description: string | null;
+  street: string | null;
+  city: string;
+  state: string;
+  postalCode: string | null;
+  latitude: number;
+  longitude: number;
+  venue: string;
+  accessNote: string | null;
+  firstReviewScores: Record<RatingDimension, number> | null;
+  firstReviewBody: string | null;
+}
+
 export interface BathroomSearch {
   keyword?: string;
   bounds?: { north: number; south: number; east: number; west: number };
@@ -76,6 +91,13 @@ export class GottaGoApi {
     return this.http
       .get<PagedResponseDto<BathroomSummaryDto>>(`${this.baseUrl}/bathrooms`, { params })
       .pipe(map((dto) => toPaged(dto, toBathroom)));
+  }
+
+  /** Adds a bathroom at a dropped pin, optionally with the first review in the same call. */
+  createBathroom(bathroom: CreateBathroom): Observable<Bathroom> {
+    return this.http
+      .post<BathroomDetailDto>(`${this.baseUrl}/bathrooms`, bathroom)
+      .pipe(map(toBathroom));
   }
 
   /** Posts a review and returns the bathroom with its recalculated average. */

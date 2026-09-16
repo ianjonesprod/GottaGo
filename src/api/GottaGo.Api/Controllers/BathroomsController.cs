@@ -113,4 +113,42 @@ public sealed class BathroomsController(
 
         return Created($"/api/bathrooms/{id}", updated.ToDetailDto(photos.GetUrl));
     }
+/// <summary>
+    /// Adds a bathroom somebody dropped a pin on, optionally with their first review in the
+    /// same request so the two cannot half-succeed.
+    /// </summary>
+    [HttpPost]
+    [Authorize]
+    [ProducesResponseType<BathroomDetailDto>(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Create(CreateBathroomRequest request, CancellationToken cancellationToken)
+    {
+        var authorId = currentUser.UserId
+            ?? throw new ForbiddenException("You need to be signed in to add a bathroom.");
+
+        var scores = request.FirstReviewScores is null
+            ? null
+            : new RatingSet(
+                request.FirstReviewScores.Smell,
+                request.FirstReviewScores.Cleanliness,
+                request.FirstReviewScores.Amenities,
+                request.FirstReviewScores.Accessibility,
+                request.FirstReviewScores.Ambience);
+
+        var created = await bathrooms.CreateAsync(
+            new CreateBathroomRequestModel(
+                request.Name,
+                request.Description,
+                new Address(request.Street ?? string.Empty, request.City, request.State, request.PostalCode ?? string.Empty),
+                new GeoPoint(request.Latitude, request.Longitude),
+                Enum.TryParse<VenueKind>(request.Venue, ignoreCase: true, out var venue) ? venue : VenueKind.Other,
+                request.AccessNote,
+                scores,
+                request.FirstReviewBody),
+            authorId,
+            cancellationToken);
+
+        return Created($"/api/bathrooms/{created.Slug}", created.ToDetailDto(photos.GetUrl));
+    }
 }

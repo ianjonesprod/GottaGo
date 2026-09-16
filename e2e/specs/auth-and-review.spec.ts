@@ -132,3 +132,47 @@ test.describe('writing a review', () => {
     await expect(smell.getByRole('radio', { name: /3 stars/ })).toBeChecked();
   });
 });
+
+test.describe('adding a bathroom', () => {
+  test('signed-out visitors are sent to sign in', async ({ page }) => {
+    await page.goto('/map/new?lat=41.5&lng=-81.7');
+
+    await expect(page).toHaveURL(/\/sign-in/);
+  });
+
+  test('a signed-in user can add one and it appears in the results', async ({ page }) => {
+    await page.goto('/sign-up');
+    await page.getByLabel('Display name').fill('Adder');
+    await page.getByLabel('Email').fill(uniqueEmail());
+    await page.getByLabel('Password').fill('correcthorsebattery');
+    await page.getByRole('button', { name: 'Create account' }).click();
+    await expect(page).toHaveURL(/\/map$/);
+
+    await page.goto('/map/new?lat=41.5044&lng=-81.6912');
+    await expect(page.getByRole('heading', { name: 'Add a bathroom' })).toBeVisible();
+
+    const name = `Test Bathroom ${Date.now()}`;
+    await page.getByLabel('Name').fill(name);
+    await page.getByLabel('Street').fill('123 Test St');
+    await page.getByLabel('Before you go').fill('Open weekdays only.');
+    await page.getByRole('button', { name: 'Add bathroom' }).click();
+
+    // Lands on the new bathroom's own page, which means it got a slug and is reachable.
+    await expect(page.getByRole('heading', { name })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText('Open weekdays only.')).toBeVisible();
+  });
+
+  test('the add form has no accessibility violations', async ({ page, expectNoA11yViolations }) => {
+    await page.goto('/sign-up');
+    await page.getByLabel('Display name').fill('Form Checker');
+    await page.getByLabel('Email').fill(uniqueEmail());
+    await page.getByLabel('Password').fill('correcthorsebattery');
+    await page.getByRole('button', { name: 'Create account' }).click();
+    await expect(page).toHaveURL(/\/map$/);
+
+    await page.goto('/map/new?lat=41.5&lng=-81.7');
+    await expect(page.getByRole('heading', { name: 'Add a bathroom' })).toBeVisible();
+
+    await expectNoA11yViolations(page, 'the add bathroom form');
+  });
+});
