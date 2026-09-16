@@ -1,6 +1,21 @@
+/*
+  The panel scrolls inside itself so the map stays put while you read.
+
+  Without this the host element has no height of its own, the panel grows as tall as its
+  content, and the whole page scrolls instead - taking the map off the top of the screen
+  exactly when you want to see where the place is.
+*/
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
 .review-form {
   display: block;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 1rem;
   background: var(--mat-sys-surface);

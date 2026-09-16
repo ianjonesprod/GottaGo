@@ -39,7 +39,7 @@
           width="100%"
           [center]="mapCentre()"
           [options]="mapOptions"
-          (mapInitialized)="$event.fitBounds(mapBounds())"
+          (mapInitialized)="onMapReady($event)"
           (mapClick)="addHere($event)"
         >
           @for (bathroom of results(); track bathroom.id) {

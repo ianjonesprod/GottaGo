@@ -187,6 +187,22 @@ export class MapPage {
   }
 
   /**
+   * Sets the opening view once the map exists.
+   *
+   * Only frames the whole search area when nothing is selected. Opening a link straight to
+   * a bathroom would otherwise zoom to it and then get yanked back out, because the map
+   * finishes initialising after that.
+   */
+  protected onMapReady(map: google.maps.Map): void {
+    if (this.selectedSlug()) {
+      this.focusSelectedOnMap();
+      return;
+    }
+
+    map.fitBounds(this.mapBounds());
+  }
+
+  /**
    * Centres and zooms the map on whichever bathroom is open.
    *
    * Glides there normally, but jumps straight to it when the visitor has asked for reduced
