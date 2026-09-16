@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/api/">
+    <Project Path="src/api/GottaGo.Api/GottaGo.Api.csproj" />
+    <Project Path="src/api/GottaGo.Application/GottaGo.Application.csproj" />
+    <Project Path="src/api/GottaGo.Domain/GottaGo.Domain.csproj" />
+    <Project Path="src/api/GottaGo.Infrastructure/GottaGo.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/GottaGo.Api.Tests/GottaGo.Api.Tests.csproj" />
+    <Project Path="tests/GottaGo.Application.Tests/GottaGo.Application.Tests.csproj" />
+    <Project Path="tests/GottaGo.Architecture.Tests/GottaGo.Architecture.Tests.csproj" />
+    <Project Path="tests/GottaGo.Domain.Tests/GottaGo.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

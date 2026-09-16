@@ -3,8 +3,8 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
-yarn.lock
+
+# Lock files ARE committed - reproducible installs matter more than diff noise
 
 # Angular
 dist/
@@ -43,3 +43,16 @@ logs/
 # Local agent instructions (not shared)
 CLAUDE.md
 .claude/
+
+# .NET
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+appsettings.*.local.json
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+.playwright/
