@@ -1,0 +1,9 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' role='presentation'>
+  <rect width='400' height='300' fill='#dbeafe'/>
+  <g fill='none' stroke='#0b4f79' stroke-width='6' stroke-linecap='round' opacity='0.55'>
+    <rect x='120' y='70' width='160' height='170' rx='12'/>
+    <line x1='200' y1='120' x2='200' y2='190'/>
+    <circle cx='200' cy='105' r='14'/>
+  </g>
+  <text x='200' y='272' font-family='Nunito, sans-serif' font-size='20' fill='#0b4f79' text-anchor='middle' opacity='0.8'>Entrance — placeholder</text>
+</svg>

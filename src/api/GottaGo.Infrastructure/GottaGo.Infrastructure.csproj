@@ -22,5 +22,6 @@
     <!-- Forward slashes on purpose: MSBuild accepts them on Windows and they survive
          tooling that mangles backslashes. -->
     <EmbeddedResource Include="Db/Scripts/*.sql" />
+    <EmbeddedResource Include="Seed/*.json" />
   </ItemGroup>
 </Project>

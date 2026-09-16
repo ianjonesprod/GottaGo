@@ -5,6 +5,8 @@ using GottaGo.Application.Reviews;
 using GottaGo.Application.Users;
 using GottaGo.Infrastructure.Db;
 using GottaGo.Infrastructure.Repositories;
+using GottaGo.Infrastructure.Seed;
+using GottaGo.Infrastructure.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,11 +24,13 @@ public static class DependencyInjection
 
         services.AddSingleton<ISqlConnectionFactory>(_ => new SqlConnectionFactory(connectionString));
         services.AddSingleton<IClock, SystemClock>();
+        services.AddSingleton<IPhotoStorage, StaticAssetPhotoStorage>();
 
         services.AddScoped<IBathroomRepository, BathroomRepository>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
         services.AddScoped<IHighScoreRepository, HighScoreRepository>();
         services.AddScoped<IUserProfileRepository, UserProfileRepository>();
+        services.AddScoped<DemoSeeder>();
 
         return services;
     }

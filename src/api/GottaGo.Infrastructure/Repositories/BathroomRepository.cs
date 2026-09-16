@@ -67,15 +67,38 @@ internal sealed class BathroomRepository(ISqlConnectionFactory connections) : IB
         parameters.Add("Skip", (page - 1) * pageSize);
         parameters.Add("Take", pageSize);
 
+        // The page of bathrooms, then the first photo for each one in the same round trip.
+        // List and map cards both show a thumbnail, so fetching them separately would mean
+        // a query per card.
         var sql = $"""
             SELECT COUNT(1) FROM dbo.Bathrooms b {where};
 
-            SELECT {SqlFragments.BathroomColumns}
-            FROM dbo.Bathrooms b
-            {SqlFragments.RatingsJoin}
-            {where}
-            ORDER BY {OrderByFor(query.Sort)}
-            OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY;
+            WITH page AS (
+                SELECT {SqlFragments.BathroomColumns}
+                FROM dbo.Bathrooms b
+                {SqlFragments.RatingsJoin}
+                {where}
+                ORDER BY {OrderByFor(query.Sort)}
+                OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY
+            )
+            SELECT * FROM page;
+
+            WITH page AS (
+                SELECT b.Id
+                FROM dbo.Bathrooms b
+                {SqlFragments.RatingsJoin}
+                {where}
+                ORDER BY {OrderByFor(query.Sort)}
+                OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY
+            )
+            SELECT p.Id, p.BathroomId, p.BlobName, p.AltText, p.SortOrder, p.IsSeedData
+            FROM dbo.BathroomPhotos p
+            INNER JOIN page ON page.Id = p.BathroomId
+            WHERE p.SortOrder = (
+                SELECT MIN(inner_p.SortOrder)
+                FROM dbo.BathroomPhotos inner_p
+                WHERE inner_p.BathroomId = p.BathroomId
+            );
             """;
 
         using var connection = await connections.OpenAsync(cancellationToken);
@@ -86,6 +109,16 @@ internal sealed class BathroomRepository(ISqlConnectionFactory connections) : IB
         var rows = await results.ReadAsync<BathroomRow>();
 
         var bathrooms = rows.Select(r => r.ToDomain()).ToList();
+
+        var photosByBathroom = (await results.ReadAsync<PhotoRow>()).ToLookup(p => p.BathroomId);
+
+        foreach (var bathroom in bathrooms)
+        {
+            foreach (var photo in photosByBathroom[bathroom.Id])
+            {
+                bathroom.AttachPhoto(photo.ToDomain());
+            }
+        }
 
         // Distance sorting needs the real great-circle figure, not the bounding box that
         // narrowed the query.
