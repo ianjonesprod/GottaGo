@@ -16,7 +16,7 @@ import { GottaGoApi } from '../../core/api/gotta-go-api';
 import type { Bathroom } from '../../core/api/models/bathroom.model';
 import { GeolocationService } from '../../core/geolocation/geolocation.service';
 import { describeDistance, milesBetween } from '../../core/geolocation/distance';
-import { boundsAround } from '../../core/geolocation/map-bounds';
+import { boundsAround, boundsCentredOn, centroidOf } from '../../core/geolocation/map-bounds';
 import { MapsLoaderService } from '../../core/maps/maps-loader.service';
 import { SearchStore } from '../../core/search/search-store';
 import { StarRatingDisplay } from '../../shared/star-rating-display/star-rating-display';
@@ -243,20 +243,24 @@ export class MapPage {
       return;
     }
 
-    const bounds = new google.maps.LatLngBounds();
-    const here = this.centre();
+    const positions = results.map((bathroom) => ({
+      latitude: bathroom.latitude,
+      longitude: bathroom.longitude,
+    }));
 
-    // Anchor the frame on you, so the result is always shown relative to where you are.
-    bounds.extend({ lat: here.latitude, lng: here.longitude });
+    // The middle of the matches, which is where the view is centred. For a single result
+    // that is the result itself, so it lands dead centre.
+    const focus = centroidOf(positions);
 
-    for (const bathroom of results) {
-      bounds.extend({ lat: bathroom.latitude, lng: bathroom.longitude });
-    }
+    // Grown symmetrically so the matches stay centred while where you are is still in
+    // frame - centring on the midpoint between you and them would push them off to one side.
+    const box = boundsCentredOn(focus, [...positions, this.centre()]);
 
-    map.fitBounds(bounds, 64);
+    map.fitBounds(
+      { north: box.north, south: box.south, east: box.east, west: box.west },
+      64,
+    );
 
-    // Somewhere essentially on top of you leaves a box with no size, and fitBounds responds
-    // by zooming as far in as it will go. Pull back to something legible.
     if ((map.getZoom() ?? 0) > MapPage.SelectedZoom) {
       map.setZoom(MapPage.SelectedZoom);
     }

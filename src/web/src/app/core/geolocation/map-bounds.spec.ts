@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { boundsAround } from './map-bounds';
+import { boundsAround, boundsCentredOn, centroidOf } from './map-bounds';
 
 const CLEVELAND = { latitude: 41.4993, longitude: -81.6944 };
 
@@ -43,5 +43,66 @@ describe('boundsAround', () => {
 
     expect(Number.isFinite(bounds.east)).toBe(true);
     expect(Number.isFinite(bounds.west)).toBe(true);
+  });
+});
+
+describe('centroidOf', () => {
+  it('is the point itself when there is only one', () => {
+    expect(centroidOf([CLEVELAND])).toEqual(CLEVELAND);
+  });
+
+  it('is the average of several', () => {
+    const middle = centroidOf([
+      { latitude: 41.0, longitude: -81.0 },
+      { latitude: 43.0, longitude: -83.0 },
+    ]);
+
+    expect(middle.latitude).toBeCloseTo(42.0, 6);
+    expect(middle.longitude).toBeCloseTo(-82.0, 6);
+  });
+});
+
+describe('boundsCentredOn', () => {
+  const ROCKY_RIVER = { latitude: 41.434, longitude: -81.8454 };
+
+  it('puts the focus exactly in the middle', () => {
+    const box = boundsCentredOn(ROCKY_RIVER, [ROCKY_RIVER, CLEVELAND]);
+
+    // This is the whole point: a single result should land dead centre, not halfway
+    // between itself and wherever the viewer happens to be.
+    expect((box.north + box.south) / 2).toBeCloseTo(ROCKY_RIVER.latitude, 6);
+    expect((box.east + box.west) / 2).toBeCloseTo(ROCKY_RIVER.longitude, 6);
+  });
+
+  it('still contains every point it was given', () => {
+    const box = boundsCentredOn(ROCKY_RIVER, [ROCKY_RIVER, CLEVELAND]);
+
+    expect(CLEVELAND.latitude).toBeLessThanOrEqual(box.north);
+    expect(CLEVELAND.latitude).toBeGreaterThanOrEqual(box.south);
+    expect(CLEVELAND.longitude).toBeLessThanOrEqual(box.east);
+    expect(CLEVELAND.longitude).toBeGreaterThanOrEqual(box.west);
+  });
+
+  it('never collapses to a single point', () => {
+    // Google Maps answers a zero-size box by zooming as far in as it can go.
+    const box = boundsCentredOn(CLEVELAND, [CLEVELAND]);
+
+    expect(box.north).toBeGreaterThan(box.south);
+    expect(box.east).toBeGreaterThan(box.west);
+  });
+
+  it('grows to hold the furthest of many points', () => {
+    const spread = [
+      { latitude: 41.3, longitude: -81.9 },
+      { latitude: 41.6, longitude: -81.5 },
+    ];
+    const box = boundsCentredOn(CLEVELAND, spread);
+
+    for (const point of spread) {
+      expect(point.latitude).toBeLessThanOrEqual(box.north);
+      expect(point.latitude).toBeGreaterThanOrEqual(box.south);
+      expect(point.longitude).toBeLessThanOrEqual(box.east);
+      expect(point.longitude).toBeGreaterThanOrEqual(box.west);
+    }
   });
 });
