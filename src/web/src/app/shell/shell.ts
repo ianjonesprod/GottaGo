@@ -1,6 +1,6 @@
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -11,7 +11,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { map } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map } from 'rxjs';
 
 import { AuthStore } from '../core/auth/auth-store';
 import { SearchStore } from '../core/search/search-store';
@@ -65,6 +65,28 @@ export class Shell {
 
   protected readonly draftQuery = signal('');
 
+  /**
+   * The search box filters as you type.
+   *
+   * Debounced because every keystroke would otherwise be a request: typing "library" would
+   * fire seven searches and the last one to come back would win, which is both wasteful and
+   * occasionally wrong. A third of a second is long enough to finish a word and short enough
+   * that it still feels immediate.
+   */
+  private readonly debouncedQuery = toSignal(
+    toObservable(this.draftQuery).pipe(
+      debounceTime(300),
+      map((value) => value.trim()),
+      distinctUntilChanged(),
+    ),
+    { initialValue: '' },
+  );
+
+  constructor() {
+    effect(() => this.search.setKeyword(this.debouncedQuery()));
+  }
+
+  /** Enter still works, and skips the wait rather than making you pause for it. */
   protected submitSearch(event: Event): void {
     event.preventDefault();
     this.search.setKeyword(this.draftQuery().trim());

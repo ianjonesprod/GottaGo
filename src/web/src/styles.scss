@@ -27,7 +27,9 @@ html {
         plain-family: ('Nunito Variable', 'Nunito', sans-serif),
         brand-family: ('Nunito Variable', 'Nunito', sans-serif),
       ),
-      density: 0,
+      // Compact controls throughout. -5 is the tightest Material offers; the smallest
+      // targets it produces still clear the 24px minimum WCAG asks for.
+      density: -5,
     )
   );
 
@@ -38,6 +40,19 @@ html {
       surface: light-dark(#f8fafc, #161b20),
     )
   );
+
+  /*
+    Material 3 makes nav list items fully pill-shaped and clips their overflow, which shears
+    the first letter off every line in the results list. A modest radius keeps the rounded
+    look without eating the text.
+
+    Note it is the active-indicator shape that drives this on a nav list, not the container
+    shape that plain lists use - overriding the latter does nothing here.
+  */
+  @include mat.list-overrides((
+    active-indicator-shape: 8px,
+    list-item-container-shape: 8px,
+  ));
 
   color-scheme: light dark;
 }

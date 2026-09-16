@@ -48,6 +48,11 @@
               (mapClick)="openBathroom(bathroom)"
             />
           }
+
+          <!-- Shows where a new bathroom would land while the add form is open. -->
+          @if (pendingPin(); as pin) {
+            <map-marker [position]="pin" [options]="pendingPinOptions" />
+          }
         </google-map>
       } @else {
         <div class="map-placeholder">

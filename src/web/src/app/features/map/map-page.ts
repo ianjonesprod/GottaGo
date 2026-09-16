@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
-import { rxResource } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, viewChild } from '@angular/core';
+import { rxResource, toSignal } from '@angular/core/rxjs-interop';
+import { filter, map as rxMap, startWith } from 'rxjs';
 import { GoogleMap, MapMarker } from '@angular/google-maps';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -7,7 +8,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 
 import { Announcer } from '../../core/a11y/announcer.service';
 import { GottaGoApi } from '../../core/api/gotta-go-api';
@@ -52,7 +53,13 @@ export class MapPage {
   private readonly geolocation = inject(GeolocationService);
   private readonly maps = inject(MapsLoaderService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   protected readonly search = inject(SearchStore);
+
+  /** The add form puts its coordinates in the URL, so the pin follows the URL. */
+  private readonly queryParams = toSignal(this.route.queryParamMap, {
+    initialValue: convertToParamMap({}),
+  });
 
   protected readonly centre = this.geolocation.centre;
   protected readonly locationState = this.geolocation.state;
@@ -94,6 +101,65 @@ export class MapPage {
     return { north: box.north, south: box.south, east: box.east, west: box.west };
   });
 
+  /**
+   * Where a new bathroom would go, while the add form is open.
+   *
+   * Without it the form talks about coordinates the user cannot see, and a pin dropped by
+   * clicking the map leaves no trace of where they clicked. This marker is the answer to
+   * "where am I actually adding this?".
+   */
+  protected readonly pendingPin = computed<google.maps.LatLngLiteral | null>(() => {
+    const params = this.queryParams();
+    const lat = Number(params.get('lat'));
+    const lng = Number(params.get('lng'));
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || !params.has('lat')) {
+      return null;
+    }
+
+    return { lat, lng };
+  });
+
+  protected readonly pendingPinOptions: google.maps.MarkerOptions = {
+    title: 'New bathroom will be added here',
+    // Visibly different from a real listing: this is a proposal, not a place that exists yet.
+    icon: {
+      path: 0,
+      scale: 10,
+      fillColor: '#0b4f79',
+      fillOpacity: 0.9,
+      strokeColor: '#ffffff',
+      strokeWeight: 3,
+    },
+    zIndex: 1000,
+  };
+
+  private readonly mapRef = viewChild(GoogleMap);
+
+  /** How close to zoom when a bathroom is opened. Street level, but still showing context. */
+  private static readonly SelectedZoom = 16;
+
+  /**
+   * The slug currently open in the detail panel, taken from the URL.
+   *
+   * Read from the URL rather than from the click handler so the map follows however the
+   * bathroom was opened - a marker, a row in the results list, a link from the leaderboard,
+   * or a pasted address.
+   */
+  private readonly selectedSlug = toSignal(
+    this.router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      startWith(null),
+      rxMap(() => {
+        const match = /^\/map\/([^/?#]+)/.exec(this.router.url);
+        const slug = match?.[1];
+
+        return slug && slug !== 'new' ? decodeURIComponent(slug) : null;
+      }),
+    ),
+    { initialValue: null },
+  );
+
   protected readonly mapOptions: google.maps.MapOptions = {
     disableDefaultUI: false,
     mapTypeControl: false,
@@ -116,6 +182,45 @@ export class MapPage {
 
       this.announcer.countOfBathrooms(this.total());
     });
+
+    effect(() => this.focusSelectedOnMap());
+  }
+
+  /**
+   * Centres and zooms the map on whichever bathroom is open.
+   *
+   * Glides there normally, but jumps straight to it when the visitor has asked for reduced
+   * motion - a map sliding across the screen is exactly the kind of movement that setting
+   * exists to prevent.
+   */
+  private focusSelectedOnMap(): void {
+    const slug = this.selectedSlug();
+    const map = this.mapRef()?.googleMap;
+
+    if (!slug || !map) {
+      return;
+    }
+
+    const bathroom = this.results().find((candidate) => candidate.slug === slug);
+
+    if (!bathroom) {
+      return;
+    }
+
+    const position = { lat: bathroom.latitude, lng: bathroom.longitude };
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+
+    if (prefersReducedMotion) {
+      map.setCenter(position);
+    } else {
+      map.panTo(position);
+    }
+
+    // Only ever zoom in. Someone who deliberately zoomed further than this should not be
+    // yanked back out just for opening a panel.
+    if ((map.getZoom() ?? 0) < MapPage.SelectedZoom) {
+      map.setZoom(MapPage.SelectedZoom);
+    }
   }
 
   protected markerOptions(bathroom: Bathroom): google.maps.MarkerOptions {

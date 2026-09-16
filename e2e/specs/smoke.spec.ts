@@ -9,10 +9,14 @@ test.describe('the app loads and shows seeded data', () => {
     const rail = page.getByRole('region', { name: 'Results' });
     await expect(rail).toBeVisible();
 
-    // The seeded dataset is 25 bathrooms and the generator is deterministic, so this is a
-    // stable number rather than a guess.
-    await expect(rail.getByRole('link')).toHaveCount(25, { timeout: 15_000 });
-    await expect(page.getByText(/25 bathrooms/)).toBeVisible();
+    // At least the 25 seeded ones. Not an exact count: anyone using the app can add a
+    // bathroom, and a test that breaks when the app is used is a test nobody keeps.
+    await expect(rail.getByRole('link').first()).toBeVisible({ timeout: 15_000 });
+    expect(await rail.getByRole('link').count()).toBeGreaterThanOrEqual(25);
+
+    // Specific seeds, which is the thing actually worth asserting.
+    await expect(rail.getByRole('link', { name: /West Side Market/ })).toBeVisible();
+    await expect(rail.getByRole('link', { name: /Cleveland Public Library/ })).toBeVisible();
   });
 
   test('map page has no accessibility violations', async ({ page }) => {

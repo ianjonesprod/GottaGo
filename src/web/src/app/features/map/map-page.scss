@@ -89,8 +89,8 @@
   }
 
   &__access {
-    display: inline-flex;
-    align-items: center;
+    display: flex;
+    align-items: flex-start;
     gap: 0.25rem;
     color: var(--mat-sys-on-surface-variant);
 
@@ -98,6 +98,35 @@
       font-size: 1rem;
       width: 1rem;
       height: 1rem;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+  }
+
+  /*
+    Material truncates list lines to one line with an ellipsis. For the access note that
+    hides the part that matters - "closed Tue and Thu" is the whole point of the field -
+    so these lines are allowed to wrap.
+  */
+  &__list {
+    .mdc-list-item__secondary-text,
+    [matListItemLine] {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      -webkit-line-clamp: none;
+    }
+
+    .mat-mdc-list-item {
+      height: auto;
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+
+    .mat-mdc-list-item-unscoped-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
     }
   }
 
