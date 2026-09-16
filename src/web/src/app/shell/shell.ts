@@ -58,9 +58,9 @@ export class Shell {
   );
 
   protected readonly destinations: Destination[] = [
-    { path: '/map', label: 'Map', icon: 'map', hint: 'Bathrooms near you on a map' },
-    { path: '/reviews', label: 'Reviews', icon: 'reviews', hint: 'Every review, newest first' },
-    { path: '/scores', label: 'High scores', icon: 'trophy', hint: 'The best rated bathrooms' },
+    { path: '/map', label: 'Map', icon: 'map', hint: 'Find one near you' },
+    { path: '/reviews', label: 'Reviews', icon: 'reviews', hint: 'Newest first' },
+    { path: '/scores', label: 'High scores', icon: 'trophy', hint: 'Best rated' },
   ];
 
   protected readonly draftQuery = signal('');

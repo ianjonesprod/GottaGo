@@ -5,33 +5,38 @@
 -->
 <a class="gg-skip-link" href="#main-content">Skip to main content</a>
 
+<!--
+  Three groups: navigation on the left, search in the middle, account on the right. The
+  outer two share the leftover space equally, which is what actually centres the search
+  rather than it merely sitting between two unequal groups.
+-->
 <mat-toolbar class="topbar">
-  <button
-    mat-icon-button
-    class="topbar__menu"
-    type="button"
-    [attr.aria-label]="drawer.opened ? 'Close navigation menu' : 'Open navigation menu'"
-    [attr.aria-expanded]="drawer.opened"
-    aria-controls="main-navigation"
-    (click)="drawer.toggle()"
-  >
-    <mat-icon fontSet="material-symbols-rounded">menu</mat-icon>
-  </button>
+  <div class="topbar__group topbar__group--start">
+    <button
+      mat-icon-button
+      class="topbar__menu"
+      type="button"
+      [attr.aria-label]="drawer.opened ? 'Close navigation menu' : 'Open navigation menu'"
+      [attr.aria-expanded]="drawer.opened"
+      aria-controls="main-navigation"
+      (click)="drawer.toggle()"
+    >
+      <mat-icon fontSet="material-symbols-rounded">menu</mat-icon>
+    </button>
 
-  <!--
-    Explicit label because the visible name is hidden at phone widths for space. Without
-    it this button has no accessible name on mobile at all.
+    <!--
+    A plain link rather than a Material button. At this density Material sizes the button,
+    and therefore its hover layer, to a height the logo and name do not fit inside, which
+    pushed the logo onto its own line above the name.
+
+    Explicit label because the visible name is hidden at phone widths for space; without it
+    this has no accessible name on mobile at all.
   -->
-  <button
-    mat-button
-    class="topbar__brand"
-    type="button"
-    aria-label="GottaGo, go to the map"
-    (click)="goHome()"
-  >
-    <span class="topbar__logo" aria-hidden="true">GG</span>
-    <span class="topbar__name">GottaGo</span>
-  </button>
+    <a class="topbar__brand" routerLink="/map" aria-label="GottaGo, go to the map">
+      <span class="topbar__logo" aria-hidden="true">GG</span>
+      <span class="topbar__name">GottaGo</span>
+    </a>
+  </div>
 
   <form class="topbar__search" role="search" (submit)="submitSearch($event)">
     <mat-form-field appearance="outline" subscriptSizing="dynamic" class="topbar__field">
@@ -59,20 +64,20 @@
     </mat-form-field>
   </form>
 
-  <span class="topbar__spacer"></span>
+  <div class="topbar__group topbar__group--end">
+    <button
+      mat-icon-button
+      type="button"
+      [attr.aria-label]="auth.user() ? 'Account menu for ' + auth.user()!.displayName : 'Sign in or create an account'"
+      [matMenuTriggerFor]="accountMenu"
+    >
+      <mat-icon fontSet="material-symbols-rounded">account_circle</mat-icon>
+    </button>
 
-  <button
-    mat-icon-button
-    type="button"
-    [attr.aria-label]="auth.user() ? 'Account menu for ' + auth.user()!.displayName : 'Sign in or create an account'"
-    [matMenuTriggerFor]="accountMenu"
-  >
-    <mat-icon fontSet="material-symbols-rounded">account_circle</mat-icon>
-  </button>
-
-  <button mat-icon-button type="button" aria-label="More options" [matMenuTriggerFor]="overflowMenu">
-    <mat-icon fontSet="material-symbols-rounded">more_vert</mat-icon>
-  </button>
+    <button mat-icon-button type="button" aria-label="More options" [matMenuTriggerFor]="overflowMenu">
+      <mat-icon fontSet="material-symbols-rounded">more_vert</mat-icon>
+    </button>
+  </div>
 
   <mat-menu #accountMenu="matMenu">
     @if (auth.user(); as user) {
@@ -116,6 +121,7 @@
         @for (destination of destinations; track destination.path) {
           <a
             mat-list-item
+            [lines]="2"
             [routerLink]="destination.path"
             routerLinkActive
             #active="routerLinkActive"

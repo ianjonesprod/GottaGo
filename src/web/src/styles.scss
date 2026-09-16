@@ -27,9 +27,10 @@ html {
         plain-family: ('Nunito Variable', 'Nunito', sans-serif),
         brand-family: ('Nunito Variable', 'Nunito', sans-serif),
       ),
-      // Compact controls throughout. -5 is the tightest Material offers; the smallest
-      // targets it produces still clear the 24px minimum WCAG asks for.
-      density: -5,
+      // Slightly tightened overall. The aggressive setting is applied to form controls
+      // only, below - at -5 a list item is too short for two lines of text and Material
+      // clips it rather than growing, which shears the descriptions off the sidebar.
+      density: -2,
     )
   );
 
@@ -53,6 +54,10 @@ html {
     active-indicator-shape: 8px,
     list-item-container-shape: 8px,
   ));
+
+  /* The dense setting that was actually wanted: text boxes and pickers, not everything. */
+  @include mat.form-field-density(-5);
+  @include mat.select-density(-5);
 
   color-scheme: light dark;
 }

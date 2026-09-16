@@ -9,6 +9,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router, RouterLink } from '@angular/router';
 
 import { Announcer } from '../../core/a11y/announcer.service';
+import { BathroomChanges } from '../../core/api/bathroom-changes';
 import { GottaGoApi } from '../../core/api/gotta-go-api';
 import { DIMENSION_LABELS, RATING_DIMENSIONS } from '../../core/api/models/bathroom.model';
 import { StarRatingInput } from '../../shared/star-rating-input/star-rating-input';
@@ -41,6 +42,7 @@ export class ReviewSubmit {
   private readonly router = inject(Router);
   private readonly announcer = inject(Announcer);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly changes = inject(BathroomChanges);
 
   readonly slug = input.required<string>();
 
@@ -112,6 +114,7 @@ export class ReviewSubmit {
       })
       .subscribe({
         next: () => {
+          this.changes.notifyChanged();
           this.announcer.say('Review posted. Thank you.');
           void this.router.navigate(['/map', this.slug()]);
         },

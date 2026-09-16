@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,6 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { Announcer } from '../../core/a11y/announcer.service';
+import { BathroomChanges } from '../../core/api/bathroom-changes';
 import { GottaGoApi } from '../../core/api/gotta-go-api';
 import { DIMENSION_LABELS, RATING_DIMENSIONS } from '../../core/api/models/bathroom.model';
 import { StarRatingInput } from '../../shared/star-rating-input/star-rating-input';
@@ -57,6 +59,7 @@ export class AddBathroom {
   private readonly route = inject(ActivatedRoute);
   private readonly announcer = inject(Announcer);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly changes = inject(BathroomChanges);
 
   private readonly heading = viewChild<ElementRef<HTMLElement>>('heading');
 
@@ -83,13 +86,18 @@ export class AddBathroom {
     ambience: this.formBuilder.control<number | null>(null),
   });
 
-  protected readonly latitude = signal(
-    Number(this.route.snapshot.queryParamMap.get('lat') ?? 41.4993),
-  );
+  /*
+    Read from the live query params, not a snapshot. Clicking the map again while this panel
+    is open changes the URL without rebuilding the component, so a snapshot taken once would
+    keep showing the first spot you clicked while the pin moved.
+  */
+  private readonly params = toSignal(this.route.queryParamMap, {
+    initialValue: this.route.snapshot.queryParamMap,
+  });
 
-  protected readonly longitude = signal(
-    Number(this.route.snapshot.queryParamMap.get('lng') ?? -81.6944),
-  );
+  protected readonly latitude = computed(() => Number(this.params().get('lat') ?? 41.4993));
+
+  protected readonly longitude = computed(() => Number(this.params().get('lng') ?? -81.6944));
 
   protected submit(): void {
     if (this.form.invalid) {
@@ -134,6 +142,9 @@ export class AddBathroom {
       })
       .subscribe({
         next: (created) => {
+          // Tell the map and the results list to refetch, so the new pin actually appears
+          // rather than the bathroom existing but being invisible until a reload.
+          this.changes.notifyChanged();
           this.announcer.say(`${created.name} added.`);
           void this.router.navigate(['/map', created.slug]);
         },

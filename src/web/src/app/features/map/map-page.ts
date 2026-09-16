@@ -11,6 +11,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ActivatedRoute, convertToParamMap, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 
 import { Announcer } from '../../core/a11y/announcer.service';
+import { BathroomChanges } from '../../core/api/bathroom-changes';
 import { GottaGoApi } from '../../core/api/gotta-go-api';
 import type { Bathroom } from '../../core/api/models/bathroom.model';
 import { GeolocationService } from '../../core/geolocation/geolocation.service';
@@ -52,6 +53,7 @@ export class MapPage {
   private readonly announcer = inject(Announcer);
   private readonly geolocation = inject(GeolocationService);
   private readonly maps = inject(MapsLoaderService);
+  private readonly changes = inject(BathroomChanges);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   protected readonly search = inject(SearchStore);
@@ -71,6 +73,8 @@ export class MapPage {
       keyword: this.search.keyword(),
       centre: this.centre(),
       radius: this.radiusMiles(),
+      // Reading this makes the search re-run whenever a bathroom is added or reviewed.
+      changed: this.changes.version(),
     }),
     stream: ({ params }) =>
       this.api.searchBathrooms({
@@ -184,7 +188,57 @@ export class MapPage {
     });
 
     effect(() => this.focusSelectedOnMap());
+    effect(() => this.fitToResultsWhenSearchChanges());
   }
+
+  /**
+   * Reframes the map around whatever a search left behind.
+   *
+   * Filtering to one bathroom on the far side of the county is useless if the map stays
+   * pointed where it was. Only fires when the search text actually changes - refitting on
+   * every result update would fight with anyone panning or zooming by hand.
+   */
+  private fitToResultsWhenSearchChanges(): void {
+    const keyword = this.search.keyword();
+    const results = this.results();
+    const map = this.mapRef()?.googleMap;
+
+    if (!map || this.bathrooms.isLoading()) {
+      return;
+    }
+
+    if (keyword === this.lastFittedKeyword) {
+      return;
+    }
+
+    this.lastFittedKeyword = keyword;
+
+    // A search that found nothing has nothing to frame; leave the view alone.
+    if (results.length === 0) {
+      return;
+    }
+
+    // Opening a bathroom takes priority - that zoom is more specific than this one.
+    if (this.selectedSlug()) {
+      return;
+    }
+
+    const bounds = new google.maps.LatLngBounds();
+
+    for (const bathroom of results) {
+      bounds.extend({ lat: bathroom.latitude, lng: bathroom.longitude });
+    }
+
+    map.fitBounds(bounds, 48);
+
+    // fitBounds on a single point zooms as far in as it will go, which is disorienting.
+    if (results.length === 1 && (map.getZoom() ?? 0) > MapPage.SelectedZoom) {
+      map.setZoom(MapPage.SelectedZoom);
+    }
+  }
+
+  /** The search text the map was last reframed for, so it only refits when that changes. */
+  private lastFittedKeyword: string | null = null;
 
   /**
    * Sets the opening view once the map exists.
