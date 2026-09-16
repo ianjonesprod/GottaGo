@@ -1,0 +1,62 @@
+<div class="auth">
+  <mat-card appearance="outlined" class="auth__card">
+    <h1 class="auth__title">Create an account</h1>
+    <p class="auth__lead">You need one to leave a review or add a bathroom.</p>
+
+    @if (errorMessage(); as message) {
+      <p class="auth__error" role="alert">
+        <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">error</mat-icon>
+        {{ message }}
+      </p>
+    }
+
+    @if (submitting()) {
+      <mat-progress-bar mode="indeterminate" aria-label="Creating your account" />
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <mat-form-field appearance="outline">
+        <mat-label>Display name</mat-label>
+        <input matInput formControlName="displayName" autocomplete="nickname" required />
+        <mat-hint>Shown next to your reviews.</mat-hint>
+        @if (form.controls.displayName.touched && form.controls.displayName.hasError('required')) {
+          <mat-error>Choose a name to show on your reviews.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" autocomplete="email" required />
+        @if (form.controls.email.touched && form.controls.email.hasError('required')) {
+          <mat-error>Enter your email address.</mat-error>
+        } @else if (form.controls.email.touched && form.controls.email.hasError('email')) {
+          <mat-error>That doesn't look like an email address.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Password</mat-label>
+        <input
+          matInput
+          type="password"
+          formControlName="password"
+          autocomplete="new-password"
+          required
+        />
+        <!-- The rule is stated up front rather than only after it is broken. -->
+        <mat-hint>At least {{ minimumPasswordLength }} characters. Length matters more than symbols.</mat-hint>
+        @if (form.controls.password.touched && form.controls.password.hasError('required')) {
+          <mat-error>Choose a password.</mat-error>
+        } @else if (form.controls.password.touched && form.controls.password.hasError('minlength')) {
+          <mat-error>Use at least {{ minimumPasswordLength }} characters.</mat-error>
+        }
+      </mat-form-field>
+
+      <button mat-flat-button type="submit" class="auth__submit" [disabled]="submitting()">
+        Create account
+      </button>
+    </form>
+
+    <p class="auth__alt">Already have an account? <a routerLink="/sign-in">Sign in</a></p>
+  </mat-card>
+</div>

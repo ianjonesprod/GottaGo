@@ -1,0 +1,65 @@
+<section class="review-form" aria-labelledby="review-heading">
+  @if (bathroom.isLoading()) {
+    <mat-progress-bar mode="indeterminate" aria-label="Loading" />
+  } @else if (bathroom.value(); as item) {
+    <header class="review-form__header">
+      <h2 #heading id="review-heading" tabindex="-1">Review {{ item.name }}</h2>
+      <a
+        mat-icon-button
+        [routerLink]="['/map', item.slug]"
+        aria-label="Cancel and go back to the bathroom"
+      >
+        <mat-icon fontSet="material-symbols-rounded">close</mat-icon>
+      </a>
+    </header>
+
+    @if (errorMessage(); as message) {
+      <p class="review-form__error" role="alert">
+        <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">error</mat-icon>
+        {{ message }}
+      </p>
+    }
+
+    @if (submitting()) {
+      <mat-progress-bar mode="indeterminate" aria-label="Posting your review" />
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <h3 id="ratings-heading">Your ratings</h3>
+      <p id="ratings-hint" class="review-form__hint">All five are required.</p>
+
+      @for (dimension of dimensions; track dimension) {
+        <gg-star-rating-input
+          [label]="labels[dimension]"
+          [formControlName]="dimension"
+          describedBy="ratings-hint"
+        />
+        @if (form.controls[dimension].touched && form.controls[dimension].invalid) {
+          <p class="review-form__field-error" role="alert">
+            Choose a {{ labels[dimension] }} rating from 1 to 5.
+          </p>
+        }
+      }
+
+      <mat-form-field appearance="outline">
+        <mat-label>Headline</mat-label>
+        <input matInput formControlName="headline" maxlength="120" />
+        <mat-hint>Optional.</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Your review</mat-label>
+        <textarea matInput formControlName="body" rows="5" maxlength="2000" required></textarea>
+        <mat-hint>What was it actually like?</mat-hint>
+        @if (form.controls.body.touched && form.controls.body.hasError('required')) {
+          <mat-error>Write a few words about it.</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="review-form__actions">
+        <button mat-flat-button type="submit" [disabled]="submitting()">Post review</button>
+        <a mat-stroked-button [routerLink]="['/map', item.slug]">Cancel</a>
+      </div>
+    </form>
+  }
+</section>

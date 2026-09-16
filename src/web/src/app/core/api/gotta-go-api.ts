@@ -10,7 +10,13 @@ import type {
   ReviewDto,
 } from './dto/api.dto';
 import { toBathroom, toHighScore, toPaged, toReview } from './mappers/api.mapper';
-import type { Bathroom, HighScore, Paged, Review } from './models/bathroom.model';
+import type { Bathroom, HighScore, Paged, RatingDimension, Review } from './models/bathroom.model';
+
+export interface SubmitReview {
+  headline: string | null;
+  body: string;
+  scores: Record<RatingDimension, number>;
+}
 
 export interface BathroomSearch {
   keyword?: string;
@@ -70,6 +76,17 @@ export class GottaGoApi {
     return this.http
       .get<PagedResponseDto<BathroomSummaryDto>>(`${this.baseUrl}/bathrooms`, { params })
       .pipe(map((dto) => toPaged(dto, toBathroom)));
+  }
+
+  /** Posts a review and returns the bathroom with its recalculated average. */
+  submitReview(bathroomId: string, review: SubmitReview): Observable<Bathroom> {
+    return this.http
+      .post<BathroomDetailDto>(`${this.baseUrl}/bathrooms/${bathroomId}/reviews`, {
+        headline: review.headline,
+        body: review.body,
+        scores: review.scores,
+      })
+      .pipe(map(toBathroom));
   }
 
   getBathroom(idOrSlug: string): Observable<Bathroom> {

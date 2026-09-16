@@ -1,0 +1,24 @@
+<!--
+  A fieldset with a legend is what groups these for a screen reader: it hears the dimension
+  name before the options, so "Cleanliness, 4 stars good, 4 of 5" rather than a bare number.
+-->
+<fieldset class="rating">
+  <legend class="rating__legend">{{ label() }}</legend>
+
+  <mat-radio-group
+    class="rating__group"
+    [value]="value()"
+    [disabled]="disabled()"
+    [attr.aria-describedby]="describedBy()"
+    (change)="select($event.value)"
+  >
+    @for (option of options; track option.value) {
+      <mat-radio-button class="rating__option" [value]="option.value">
+        <!-- Visible star, plus the real text which stays available to assistive tech and
+             to speech input ("click 4 stars"). -->
+        <span class="rating__star" aria-hidden="true">★</span>
+        <span class="gg-visually-hidden">{{ option.text }}</span>
+      </mat-radio-button>
+    }
+  </mat-radio-group>
+</fieldset>

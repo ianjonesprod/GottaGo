@@ -1,4 +1,4 @@
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import {
   ApplicationConfig,
   inject,
@@ -8,13 +8,17 @@ import {
 import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
 
 import { RouteA11yService } from './core/a11y/route-a11y.service';
+import { authInterceptor } from './core/auth/auth.interceptor';
+import { AuthStore } from './core/auth/auth-store';
 import { AppConfigService } from './core/config/app-config.service';
+import { firstValueFrom } from 'rxjs';
+
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideHttpClient(withFetch()),
+    provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     provideRouter(
       routes,
       withComponentInputBinding(),
@@ -27,7 +31,15 @@ export const appConfig: ApplicationConfig = {
 
       // Fetch the Maps key and defaults before the first render, so the map can draw
       // immediately rather than flashing a placeholder first.
-      return inject(AppConfigService).load();
+      const auth = inject(AuthStore);
+
+      // Restore the session before the first render. The access token only lives in memory,
+      // so a refresh loses it; the cookie is what survives, and this trades it back in.
+      // A 401 here is the normal answer for a visitor who is not signed in.
+      return Promise.all([
+        inject(AppConfigService).load(),
+        firstValueFrom(auth.refresh()).catch(() => null),
+      ]);
     }),
   ],
 };

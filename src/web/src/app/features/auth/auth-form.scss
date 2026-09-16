@@ -1,0 +1,67 @@
+.auth {
+  display: grid;
+  place-items: start center;
+  padding: 2rem 1rem 4rem;
+
+  &__card {
+    width: 100%;
+    max-width: 26rem;
+    padding: 1.5rem;
+  }
+
+  &__title {
+    margin: 0 0 0.25rem;
+    font: var(--mat-sys-headline-small);
+  }
+
+  &__lead {
+    margin: 0 0 1.25rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  &__error {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    background: var(--mat-sys-error-container);
+    color: var(--mat-sys-on-error-container);
+  }
+
+  form {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  &__submit {
+    margin-top: 0.75rem;
+  }
+
+  &__divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.25rem 0;
+    color: var(--mat-sys-on-surface-variant);
+
+    &::before,
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--mat-sys-outline-variant);
+    }
+  }
+
+  &__google {
+    width: 100%;
+  }
+
+  &__alt {
+    margin: 1.25rem 0 0;
+    text-align: center;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}

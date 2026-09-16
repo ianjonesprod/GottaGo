@@ -1,0 +1,56 @@
+.rating {
+  border: 0;
+  padding: 0;
+  margin: 0 0 0.75rem;
+
+  &__legend {
+    padding: 0;
+    margin-bottom: 0.15rem;
+    font-weight: 600;
+  }
+
+  &__group {
+    display: flex;
+    gap: 0.1rem;
+  }
+
+  /* Hide Material's radio circle and let the star be the control. The input itself is still
+     present and focusable - only the circle is gone. */
+  &__option {
+    --mat-radio-state-layer-size: 2.5rem;
+
+    ::ng-deep .mdc-radio__background {
+      display: none;
+    }
+
+    ::ng-deep .mdc-form-field > label {
+      padding-left: 0;
+      cursor: pointer;
+    }
+  }
+
+  &__star {
+    font-size: 1.75rem;
+    line-height: 1;
+    color: var(--mat-sys-outline);
+    transition: color 120ms ease;
+  }
+
+  /* Every star up to and including the selected one fills, which is what people expect a
+     rating to look like. :has() lets the earlier siblings react to a later selection. */
+  &__group:has(.rating__option:nth-of-type(1) input:checked) .rating__option:nth-of-type(-n + 1) .rating__star,
+  &__group:has(.rating__option:nth-of-type(2) input:checked) .rating__option:nth-of-type(-n + 2) .rating__star,
+  &__group:has(.rating__option:nth-of-type(3) input:checked) .rating__option:nth-of-type(-n + 3) .rating__star,
+  &__group:has(.rating__option:nth-of-type(4) input:checked) .rating__option:nth-of-type(-n + 4) .rating__star,
+  &__group:has(.rating__option:nth-of-type(5) input:checked) .rating__option:nth-of-type(-n + 5) .rating__star {
+    color: var(--gg-ink);
+  }
+
+  /* The focus ring has to be obvious, because the radio circle that would normally show it
+     is hidden. */
+  &__option:has(input:focus-visible) .rating__star {
+    outline: 3px solid var(--gg-ink);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}

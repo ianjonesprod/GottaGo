@@ -3,6 +3,9 @@ using GottaGo.Application.Abstractions;
 using GottaGo.Application.Bathrooms;
 using GottaGo.Application.Reviews;
 using GottaGo.Domain.Bathrooms;
+using System.ComponentModel.DataAnnotations;
+using GottaGo.Domain.Reviews;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GottaGo.Api.Controllers;
@@ -12,7 +15,8 @@ namespace GottaGo.Api.Controllers;
 public sealed class BathroomsController(
     BathroomService bathrooms,
     ReviewService reviews,
-    IPhotoStorage photos) : ControllerBase
+    IPhotoStorage photos,
+    ICurrentUser currentUser) : ControllerBase
 {
     /// <summary>Search bathrooms by keyword, map viewport, or distance from a point.</summary>
     [HttpGet]
@@ -76,5 +80,37 @@ public sealed class BathroomsController(
         var results = await reviews.ListForBathroomAsync(id, page, pageSize, cancellationToken);
 
         return Ok(results.ToResponse(r => r.ToDto()));
+    }
+/// <summary>
+    /// Posts a review. Reviewing a bathroom you have already reviewed updates your existing
+    /// review rather than adding a second one, so nobody can move an average on their own.
+    /// </summary>
+    [HttpPost("{id:guid}/reviews")]
+    [Authorize]
+    [ProducesResponseType<ReviewDto>(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> SubmitReview(
+        Guid id, SubmitReviewRequest request, CancellationToken cancellationToken)
+    {
+        var authorId = currentUser.UserId
+            ?? throw new ForbiddenException("You need to be signed in to review a bathroom.");
+
+        var scores = new RatingSet(
+            request.Scores.Smell,
+            request.Scores.Cleanliness,
+            request.Scores.Amenities,
+            request.Scores.Accessibility,
+            request.Scores.Ambience);
+
+        await reviews.SubmitAsync(
+            new SubmitReviewCommand(id, authorId, request.Headline, request.Body, scores, request.VisitedOn),
+            cancellationToken);
+
+        // Return the refreshed bathroom so the client can show the new average without a
+        // second round trip.
+        var updated = await bathrooms.GetAsync(id.ToString(), cancellationToken);
+
+        return Created($"/api/bathrooms/{id}", updated.ToDetailDto(photos.GetUrl));
     }
 }

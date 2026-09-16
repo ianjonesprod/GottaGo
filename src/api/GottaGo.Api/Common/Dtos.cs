@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using GottaGo.Application.HighScores;
 using GottaGo.Application.Reviews;
 using GottaGo.Domain.Bathrooms;
@@ -167,3 +168,10 @@ internal static class DtoMapper
         Math.Round(entry.RankingScore, 3),
         entry.IsSeedData);
 }
+
+/// <summary>What a client sends to post a review.</summary>
+public sealed record SubmitReviewRequest(
+    [MaxLength(120)] string? Headline,
+    [Required, MaxLength(2000)] string Body,
+    [Required] ScoresDto Scores,
+    DateOnly? VisitedOn);

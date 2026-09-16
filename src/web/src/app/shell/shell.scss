@@ -75,17 +75,35 @@
   }
 }
 
-/* On a phone the toolbar cannot hold a logo, a search field and three buttons.
-   The name and the submit button go first; search itself stays. */
+/*
+  A phone toolbar cannot hold a logo, a search field and three buttons on one line: the
+  search field wins the space and pushes the account and overflow buttons off the screen
+  entirely, which makes them unreachable rather than merely cramped.
+
+  So on narrow screens the bar wraps and search takes a row of its own. Everything stays
+  reachable, and the toolbar grows instead of hiding controls.
+*/
 @media (max-width: 720px) {
   .topbar {
+    height: auto;
+    flex-wrap: wrap;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    row-gap: 0.5rem;
+
     &__name,
     &__submit {
       display: none;
     }
 
     &__search {
-      flex-basis: auto;
+      order: 10;
+      flex: 1 0 100%;
+      max-width: none;
+    }
+
+    &__spacer {
+      order: 5;
     }
   }
 }

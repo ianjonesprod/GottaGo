@@ -62,7 +62,12 @@
 
   <span class="topbar__spacer"></span>
 
-  <button mat-icon-button type="button" aria-label="Your account" [matMenuTriggerFor]="accountMenu">
+  <button
+    mat-icon-button
+    type="button"
+    [attr.aria-label]="auth.user() ? 'Account menu for ' + auth.user()!.displayName : 'Sign in or create an account'"
+    [matMenuTriggerFor]="accountMenu"
+  >
     <mat-icon fontSet="material-symbols-rounded">account_circle</mat-icon>
   </button>
 
@@ -71,14 +76,22 @@
   </button>
 
   <mat-menu #accountMenu="matMenu">
-    <button mat-menu-item type="button" routerLink="/sign-in">
-      <mat-icon fontSet="material-symbols-rounded">login</mat-icon>
-      <span>Sign in</span>
-    </button>
-    <button mat-menu-item type="button" routerLink="/sign-up">
-      <mat-icon fontSet="material-symbols-rounded">person_add</mat-icon>
-      <span>Create an account</span>
-    </button>
+    @if (auth.user(); as user) {
+      <div class="topbar__who" role="presentation">Signed in as {{ user.displayName }}</div>
+      <button mat-menu-item type="button" (click)="signOut()">
+        <mat-icon fontSet="material-symbols-rounded">logout</mat-icon>
+        <span>Sign out</span>
+      </button>
+    } @else {
+      <button mat-menu-item type="button" routerLink="/sign-in">
+        <mat-icon fontSet="material-symbols-rounded">login</mat-icon>
+        <span>Sign in</span>
+      </button>
+      <button mat-menu-item type="button" routerLink="/sign-up">
+        <mat-icon fontSet="material-symbols-rounded">person_add</mat-icon>
+        <span>Create an account</span>
+      </button>
+    }
   </mat-menu>
 
   <mat-menu #overflowMenu="matMenu">

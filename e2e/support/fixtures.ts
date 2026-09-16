@@ -1,4 +1,10 @@
-import { test as base } from '@playwright/test';
+import { test as base, type Page } from '@playwright/test';
+
+import { expectNoA11yViolations as assertNoViolations } from './a11y';
+
+interface Fixtures {
+  expectNoA11yViolations: (page: Page, context?: string) => Promise<void>;
+}
 
 /**
  * Tests run without the real Google Maps script.
@@ -11,10 +17,13 @@ import { test as base } from '@playwright/test';
  * The map itself is verified by hand rather than here, because asserting against Google's
  * rendered tiles is brittle and tests their software rather than ours.
  */
-export const test = base.extend({
+export const test = base.extend<Fixtures>({
   page: async ({ page }, use) => {
     await page.route('https://maps.googleapis.com/**', (route) => route.abort());
     await use(page);
+  },
+  expectNoA11yViolations: async ({}, use) => {
+    await use(assertNoViolations);
   },
 });
 

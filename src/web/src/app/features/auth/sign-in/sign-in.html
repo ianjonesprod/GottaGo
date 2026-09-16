@@ -1,0 +1,60 @@
+<div class="auth">
+  <mat-card appearance="outlined" class="auth__card">
+    <h1 class="auth__title">Sign in</h1>
+    <p class="auth__lead">Sign in to review bathrooms and add new ones.</p>
+
+    <!-- role="alert" so a failed sign-in is announced rather than silently appearing. -->
+    @if (errorMessage(); as message) {
+      <p class="auth__error" role="alert">
+        <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">error</mat-icon>
+        {{ message }}
+      </p>
+    }
+
+    @if (submitting()) {
+      <mat-progress-bar mode="indeterminate" aria-label="Signing in" />
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" autocomplete="email" required />
+        @if (form.controls.email.touched && form.controls.email.hasError('required')) {
+          <mat-error>Enter your email address.</mat-error>
+        } @else if (form.controls.email.touched && form.controls.email.hasError('email')) {
+          <mat-error>That doesn't look like an email address.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Password</mat-label>
+        <input
+          matInput
+          type="password"
+          formControlName="password"
+          autocomplete="current-password"
+          required
+        />
+        @if (form.controls.password.touched && form.controls.password.hasError('required')) {
+          <mat-error>Enter your password.</mat-error>
+        }
+      </mat-form-field>
+
+      <button mat-flat-button type="submit" class="auth__submit" [disabled]="submitting()">
+        Sign in
+      </button>
+    </form>
+
+    @if (config.current().googleSignInEnabled) {
+      <div class="auth__divider"><span>or</span></div>
+      <button mat-stroked-button type="button" class="auth__google" (click)="signInWithGoogle()">
+        <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">login</mat-icon>
+        Continue with Google
+      </button>
+    }
+
+    <p class="auth__alt">
+      Don't have an account? <a routerLink="/sign-up">Create one</a>
+    </p>
+  </mat-card>
+</div>

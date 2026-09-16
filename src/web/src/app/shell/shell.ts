@@ -13,6 +13,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { map } from 'rxjs';
 
+import { AuthStore } from '../core/auth/auth-store';
 import { SearchStore } from '../core/search/search-store';
 import { ThemeService } from '../core/theme/theme.service';
 
@@ -47,6 +48,7 @@ export class Shell {
   private readonly breakpoints = inject(BreakpointObserver);
   private readonly router = inject(Router);
   protected readonly search = inject(SearchStore);
+  protected readonly auth = inject(AuthStore);
   protected readonly theme = inject(ThemeService);
 
   /** Below tablet width the sidenav becomes a slide-over rather than a permanent rail. */
@@ -77,6 +79,10 @@ export class Shell {
     if (this.isHandset()) {
       drawer.close();
     }
+  }
+
+  protected signOut(): void {
+    this.auth.signOut().subscribe(() => void this.router.navigate(['/map']));
   }
 
   protected goHome(): void {

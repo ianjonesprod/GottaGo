@@ -21,13 +21,17 @@ builder.Services.AddGottaGoAuthentication(builder.Configuration);
 
 // Rate limit the auth endpoints. Without it, the lockout counter is the only thing between
 // an attacker and unlimited password guesses.
+//
+// The allowance is configurable because the production figure is deliberately tight and an
+// end-to-end run creates several accounts in a few seconds. Loosening it for development
+// rather than raising it everywhere keeps the protection where it matters.
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     options.AddFixedWindowLimiter("auth", limiter =>
     {
         limiter.Window = TimeSpan.FromMinutes(1);
-        limiter.PermitLimit = 10;
+        limiter.PermitLimit = builder.Configuration.GetValue("RateLimiting:AuthRequestsPerMinute", 10);
         limiter.QueueLimit = 0;
     });
 });
