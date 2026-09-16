@@ -1,7 +1,9 @@
+using System.Threading.RateLimiting;
 using GottaGo.Api.Common;
 using GottaGo.Infrastructure;
 using GottaGo.Infrastructure.Db;
 using GottaGo.Infrastructure.Seed;
+using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +17,20 @@ builder.Services.AddExceptionHandler<DomainExceptionHandler>();
 // the interfaces the application layer owns.
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddGottaGoAuthentication(builder.Configuration);
+
+// Rate limit the auth endpoints. Without it, the lockout counter is the only thing between
+// an attacker and unlimited password guesses.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddFixedWindowLimiter("auth", limiter =>
+    {
+        limiter.Window = TimeSpan.FromMinutes(1);
+        limiter.PermitLimit = 10;
+        limiter.QueueLimit = 0;
+    });
+});
 
 var app = builder.Build();
 
@@ -67,6 +83,8 @@ else
 }
 
 app.UseExceptionHandler();
+app.UseRateLimiter();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
