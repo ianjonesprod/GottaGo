@@ -36,54 +36,62 @@
       </div>
     </section>
 
-    <section class="map-page__rail" aria-labelledby="results-heading">
-      <h2 id="results-heading" class="map-page__rail-heading">
-        Results
-        <span class="map-page__count" role="status" aria-live="polite">
-          @if (bathrooms.isLoading()) {
-            Loading…
-          } @else if (bathrooms.error()) {
-            Couldn't load
-          } @else {
-            {{ total() }} {{ total() === 1 ? 'bathroom' : 'bathrooms' }}
-          }
-        </span>
-      </h2>
+    <div class="map-page__side">
+      <router-outlet #detail="outlet" />
 
-      @if (bathrooms.isLoading()) {
-        <mat-progress-bar mode="indeterminate" aria-label="Loading bathrooms" />
-      } @else if (bathrooms.error()) {
-        <p class="map-page__error">
-          <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">error</mat-icon>
-          Couldn't load bathrooms. Check the API is running.
-        </p>
-      } @else if (total() === 0) {
-        <p class="map-page__empty">
-          No bathrooms here. Try widening the search or clearing the keyword.
-        </p>
-      } @else {
-        <mat-nav-list class="map-page__list">
-          @for (bathroom of results(); track bathroom.id) {
-            <a mat-list-item [routerLink]="['/map', bathroom.slug]">
-              <span matListItemTitle>{{ bathroom.name }}</span>
-              <span matListItemLine>{{ bathroom.address }}</span>
-              <span matListItemLine>
-                <gg-star-rating-display
-                  [value]="bathroom.rating.overall"
-                  [reviewCount]="bathroom.rating.reviewCount"
-                  [label]="bathroom.name"
-                />
-              </span>
-              @if (bathroom.accessNote) {
-                <span matListItemLine class="map-page__access">
-                  <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">info</mat-icon>
-                  {{ bathroom.accessNote }}
-                </span>
+      <!-- The detail panel takes this column when a bathroom is open, so the rail steps
+           aside rather than the two fighting for the same space. -->
+      @if (!detail.isActivated) {
+        <section class="map-page__rail" aria-labelledby="results-heading">
+          <h2 id="results-heading" class="map-page__rail-heading">
+            Results
+            <span class="map-page__count" role="status" aria-live="polite">
+              @if (bathrooms.isLoading()) {
+                Loading…
+              } @else if (bathrooms.error()) {
+                Couldn't load
+              } @else {
+                {{ total() }} {{ total() === 1 ? 'bathroom' : 'bathrooms' }}
               }
-            </a>
+            </span>
+          </h2>
+
+          @if (bathrooms.isLoading()) {
+            <mat-progress-bar mode="indeterminate" aria-label="Loading bathrooms" />
+          } @else if (bathrooms.error()) {
+            <p class="map-page__error">
+              <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">error</mat-icon>
+              Couldn't load bathrooms. Check the API is running.
+            </p>
+          } @else if (total() === 0) {
+            <p class="map-page__empty">
+              No bathrooms here. Try widening the search or clearing the keyword.
+            </p>
+          } @else {
+            <mat-nav-list class="map-page__list">
+              @for (bathroom of results(); track bathroom.id) {
+                <a mat-list-item [routerLink]="['/map', bathroom.slug]">
+                  <span matListItemTitle>{{ bathroom.name }}</span>
+                  <span matListItemLine>{{ bathroom.address }}</span>
+                  <span matListItemLine>
+                    <gg-star-rating-display
+                      [value]="bathroom.rating.overall"
+                      [reviewCount]="bathroom.rating.reviewCount"
+                      [label]="bathroom.name"
+                    />
+                  </span>
+                  @if (bathroom.accessNote) {
+                    <span matListItemLine class="map-page__access">
+                      <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">info</mat-icon>
+                      {{ bathroom.accessNote }}
+                    </span>
+                  }
+                </a>
+              }
+            </mat-nav-list>
           }
-        </mat-nav-list>
+        </section>
       }
-    </section>
+    </div>
   </div>
 </div>

@@ -13,7 +13,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './star-rating-display.scss',
   template: `
-    <span class="rating" [attr.aria-label]="accessibleLabel()">
+    <span class="rating" role="img" [attr.aria-label]="accessibleLabel()">
       <span class="stars" aria-hidden="true">
         @for (star of stars(); track $index) {
           <span class="star" [class.star--filled]="star === 'full'" [class.star--half]="star === 'half'"

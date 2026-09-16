@@ -11,6 +11,16 @@ export const routes: Routes = [
     title: 'Map',
     data: { title: 'Map' },
     loadComponent: () => import('./features/map/map-page').then((m) => m.MapPage),
+    children: [
+      {
+        // A child route rather than a dialog, so the panel has a shareable URL and the
+        // browser back button closes it.
+        path: ':slug',
+        data: { title: 'Bathroom' },
+        loadComponent: () =>
+          import('./features/bathroom-detail/bathroom-detail').then((m) => m.BathroomDetail),
+      },
+    ],
   },
   {
     path: 'reviews',

@@ -5,7 +5,7 @@
 -->
 <a class="gg-skip-link" href="#main-content">Skip to main content</a>
 
-<mat-toolbar class="topbar" color="primary">
+<mat-toolbar class="topbar">
   <button
     mat-icon-button
     class="topbar__menu"
@@ -18,7 +18,17 @@
     <mat-icon fontSet="material-symbols-rounded">menu</mat-icon>
   </button>
 
-  <button mat-button class="topbar__brand" type="button" (click)="goHome()">
+  <!--
+    Explicit label because the visible name is hidden at phone widths for space. Without
+    it this button has no accessible name on mobile at all.
+  -->
+  <button
+    mat-button
+    class="topbar__brand"
+    type="button"
+    aria-label="GottaGo, go to the map"
+    (click)="goHome()"
+  >
     <span class="topbar__logo" aria-hidden="true">GG</span>
     <span class="topbar__name">GottaGo</span>
   </button>

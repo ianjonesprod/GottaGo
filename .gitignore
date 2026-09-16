@@ -56,3 +56,6 @@ test-results/
 playwright-report/
 blob-report/
 .playwright/
+
+# Playwright
+e2e/node_modules/

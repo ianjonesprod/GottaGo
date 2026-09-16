@@ -1,3 +1,5 @@
+@use '@angular/material' as mat;
+
 :host {
   display: flex;
   flex-direction: column;
@@ -11,6 +13,15 @@
   gap: 0.5rem;
   background: var(--gg-ink);
   color: #fff;
+
+  /* Material tints buttons with the theme primary, which on this dark blue bar drops
+     below 4.5:1. Force white for everything sitting on the bar. */
+  .mat-mdc-button,
+  .mat-mdc-icon-button,
+  .mdc-button__label,
+  mat-icon {
+    color: #fff;
+  }
 
   &__brand {
     display: inline-flex;
@@ -42,6 +53,21 @@
 
   &__field {
     flex: 1;
+
+    /* The search box sits on the dark blue bar, where Material's default label and outline
+       colours fall below 4.5:1. Overridden through theme tokens rather than ::ng-deep so
+       the change is scoped and survives Material internals changing. */
+    @include mat.form-field-overrides((
+      outlined-label-text-color: rgba(255, 255, 255, 0.92),
+      outlined-hover-label-text-color: #fff,
+      outlined-focus-label-text-color: #fff,
+      outlined-input-text-color: #fff,
+      outlined-input-text-placeholder-color: rgba(255, 255, 255, 0.75),
+      outlined-outline-color: rgba(255, 255, 255, 0.7),
+      outlined-hover-outline-color: #fff,
+      outlined-focus-outline-color: #fff,
+      outlined-caret-color: #fff,
+    ));
   }
 
   &__spacer {

@@ -1,0 +1,140 @@
+<!--
+  tabindex="-1" makes this focusable programmatically without putting it in the tab order.
+  aria-labelledby points at the title so a screen reader announces which bathroom opened.
+-->
+<section
+  #panel
+  class="detail"
+  tabindex="-1"
+  aria-labelledby="detail-title"
+  (keydown)="onKeydown($event)"
+>
+  @if (bathroom.isLoading()) {
+    <mat-progress-bar mode="indeterminate" aria-label="Loading bathroom" />
+    <p class="detail__status" role="status">Loading…</p>
+  } @else if (bathroom.error()) {
+    <div class="detail__status" role="status">
+      <h2 id="detail-title">Not found</h2>
+      <p>We couldn't find that bathroom. It may have been removed.</p>
+      <a mat-stroked-button routerLink="/map">Back to the map</a>
+    </div>
+  } @else if (bathroom.value(); as item) {
+    <header class="detail__header">
+      <div>
+        <h2 id="detail-title">{{ item.name }}</h2>
+        <p class="detail__address">{{ item.address }}</p>
+        @if (mapsUrl(); as url) {
+          <a class="detail__maps" [href]="url" target="_blank" rel="noopener noreferrer">
+            Open in Google Maps
+            <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">open_in_new</mat-icon>
+            <span class="gg-visually-hidden">(opens in a new tab)</span>
+          </a>
+        }
+      </div>
+
+      <button
+        mat-icon-button
+        type="button"
+        class="detail__close"
+        aria-label="Close bathroom details"
+        (click)="close()"
+      >
+        <mat-icon fontSet="material-symbols-rounded">close</mat-icon>
+      </button>
+    </header>
+
+    @if (item.isDemoData) {
+      <mat-chip-set>
+        <mat-chip highlighted>Demo data — these reviews are made up</mat-chip>
+      </mat-chip-set>
+    }
+
+    @if (item.accessNote) {
+      <p class="detail__access">
+        <mat-icon fontSet="material-symbols-rounded" aria-hidden="true">info</mat-icon>
+        <span><strong>Before you go:</strong> {{ item.accessNote }}</span>
+      </p>
+    }
+
+    @if (item.description) {
+      <p class="detail__description">{{ item.description }}</p>
+    }
+
+    <mat-divider />
+
+    <h3>Ratings</h3>
+    @if (item.rating.reviewCount === 0) {
+      <p class="detail__empty">No ratings yet. Be the first.</p>
+    } @else {
+      <p class="detail__overall">
+        <gg-star-rating-display
+          [value]="item.rating.overall"
+          [reviewCount]="item.rating.reviewCount"
+          label="Overall"
+        />
+      </p>
+
+      <dl class="detail__scores">
+        @for (dimension of dimensions; track dimension) {
+          <div class="detail__score">
+            <dt>{{ labels[dimension] }}</dt>
+            <dd>
+              <gg-star-rating-display
+                [value]="item.rating.byDimension[dimension]"
+                [label]="labels[dimension]"
+              />
+            </dd>
+          </div>
+        }
+      </dl>
+    }
+
+    <mat-divider />
+
+    <h3 id="gallery-heading">Gallery</h3>
+    @if (item.photos.length === 0) {
+      <p class="detail__empty">No pictures yet.</p>
+    } @else {
+      <ul class="detail__gallery" role="list" aria-labelledby="gallery-heading">
+        @for (photo of item.photos; track photo.id) {
+          <li>
+            <img [src]="photo.url" [alt]="photo.altText" width="120" height="90" loading="lazy" />
+          </li>
+        }
+      </ul>
+    }
+
+    <mat-divider />
+
+    <div class="detail__cta">
+      <a mat-flat-button [routerLink]="['/map', item.slug, 'review']">Review this bathroom</a>
+    </div>
+
+    <h3>What people said</h3>
+    @if (reviews.isLoading()) {
+      <p class="detail__status" role="status">Loading reviews…</p>
+    } @else if (reviews.value(); as page) {
+      @if (page.items.length === 0) {
+        <p class="detail__empty">No reviews yet.</p>
+      } @else {
+        <ul class="detail__reviews" role="list">
+          @for (review of page.items; track review.id) {
+            <li class="detail__review">
+              <p class="detail__review-meta">
+                <strong>{{ review.authorName }}</strong>
+                <time [attr.datetime]="review.createdAt.toISOString()">
+                  {{ review.createdAt.toLocaleDateString() }}
+                </time>
+              </p>
+              @if (review.headline) {
+                <p class="detail__review-headline">{{ review.headline }}</p>
+              }
+              <p>{{ review.body }}</p>
+              <gg-star-rating-display [value]="review.overall" label="This review" />
+            </li>
+          }
+        </ul>
+      }
+    }
+  }
+</section>

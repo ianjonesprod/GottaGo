@@ -6,7 +6,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterOutlet } from '@angular/router';
 
 import { Announcer } from '../../core/a11y/announcer.service';
 import { GottaGoApi } from '../../core/api/gotta-go-api';
@@ -28,6 +28,7 @@ import { StarRatingDisplay } from '../../shared/star-rating-display/star-rating-
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     RouterLink,
+    RouterOutlet,
     MatCardModule,
     MatListModule,
     MatButtonModule,

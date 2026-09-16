@@ -34,8 +34,15 @@
     place-items: center;
   }
 
+  &__side {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
   &__rail {
     display: flex;
+    flex: 1;
     flex-direction: column;
     min-height: 0;
     border: 1px solid var(--mat-sys-outline-variant);
@@ -125,8 +132,8 @@
     min-height: 16rem;
   }
 
-  .map-page__rail {
+  .map-page__side {
     order: 1;
-    max-height: 60vh;
+    max-height: 65vh;
   }
 }

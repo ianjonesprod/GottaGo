@@ -17,12 +17,24 @@ export class RouteA11yService {
   private readonly title = inject(Title);
   private readonly document = inject(DOCUMENT);
 
+  private isFirstNavigation = true;
+
   start(): void {
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe(() => {
         const routeTitle = this.deepestTitle();
         this.title.setTitle(routeTitle ? `${routeTitle} — GottaGo` : 'GottaGo');
+
+        // Do not move focus on the very first navigation. A fresh page load should leave
+        // focus at the top of the document so the skip link is the first thing you reach;
+        // stealing focus to the heading here would tab straight past it. Only in-app
+        // navigations need the nudge, because those are the ones a browser does not
+        // announce on its own.
+        if (this.isFirstNavigation) {
+          this.isFirstNavigation = false;
+          return;
+        }
 
         // Let the new view render before hunting for its heading.
         queueMicrotask(() => this.focusMainHeading());
