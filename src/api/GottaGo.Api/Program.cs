@@ -1,10 +1,32 @@
+using GottaGo.Infrastructure;
+using GottaGo.Infrastructure.Db;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
 
+// The only line in the solution that names an infrastructure type. Everything else talks to
+// the interfaces the application layer owns.
+builder.Services.AddInfrastructure(builder.Configuration);
+
 var app = builder.Build();
+
+// `dotnet run -- --migrate` applies pending SQL scripts and exits without serving.
+if (args.Contains("--migrate"))
+{
+    var result = DatabaseMigrator.Run(ConnectionStrings.GottaGo(builder.Configuration));
+
+    if (!result.Successful)
+    {
+        app.Logger.LogError(result.Error, "Database migration failed.");
+        return 1;
+    }
+
+    app.Logger.LogInformation("Database is up to date.");
+    return 0;
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -25,3 +47,5 @@ app.MapControllers();
 app.MapHealthChecks("/health");
 
 app.Run();
+
+return 0;
